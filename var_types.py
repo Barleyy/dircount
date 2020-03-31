@@ -24,6 +24,7 @@ def declare_int(directory):
     bits_dir = dirmove(directory, 0)
     bits = map(directory_to_bit, os.listdir(bits_dir))
     res = [b*e for b, e in zip(bit_values, list(bits))] # TODO to se trzeba zapisać
+    print(sum(res))
 
 
 def declare_float(directory):
