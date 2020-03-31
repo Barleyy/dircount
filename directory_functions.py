@@ -1,5 +1,4 @@
 import os
-import settings
 
 def dirlen(directory):
     return len(os.listdir(directory))

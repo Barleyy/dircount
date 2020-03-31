@@ -12,7 +12,7 @@ class Commands(Enum):
     _print = 5
 
 def ex_declare(directory):
-    declare(directory)
+    declare(dirmove(directory, 0))
 
 def ex_if(directory):
     return
