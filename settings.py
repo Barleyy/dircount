@@ -1,5 +1,11 @@
-def init():
-    global pointer
-    pointer = ''
+import os
+import commands
+from directory_functions import Directory
+
+
+def init(pointer):
     global variables
     variables = {}
+    root = Directory(pointer)
+    for directory in root.get_directory_children():
+        commands.expression(directory)

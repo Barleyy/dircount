@@ -1,7 +1,7 @@
 from enum import Enum
 import settings
-from types import *
-from functions import *
+from var_types import *
+from directory_functions import *
 
 
 class Commands(Enum):
@@ -11,19 +11,21 @@ class Commands(Enum):
     _for = 4
     _print = 5
 
-def ex_declare():
-    declare()
+def ex_declare(directory):
+    if directory.dirlen() != 2:
+        raise ValueError("Directory of type 'Command' must have 2 subdirectories")
+    declare(directory.navigate_to_nth_child(1))
 
-def ex_if():
+def ex_if(directory):
     return
 
-def ex_while():
+def ex_while(directory):
     return
 
-def ex_for():
+def ex_for(directory):
     return
 
-def ex_print():
+def ex_print(directory):
     return
 
 commands_dict = {
@@ -34,5 +36,5 @@ commands_dict = {
     Commands._print : ex_print
 }
 
-def expression():
-    commands_dict[Commands(dirlen())]()
+def expression(directory):
+    commands_dict[Commands(directory.get_dir_type())](directory)
