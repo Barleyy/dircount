@@ -12,7 +12,9 @@ class Commands(Enum):
     _print = 5
 
 def ex_declare(directory):
-    declare(dirmove(directory, 1))
+    if directory.dirlen() != 2:
+        raise ValueError("Directory of type 'Command' must have 2 subdirectories")
+    declare(directory.navigate_to_nth_child(1))
 
 def ex_if(directory):
     return
@@ -35,4 +37,4 @@ commands_dict = {
 }
 
 def expression(directory):
-    commands_dict[Commands(dirlen(dirmove(directory, 0)))](directory)
+    commands_dict[Commands(directory.get_dir_type())](directory)

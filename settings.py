@@ -1,11 +1,11 @@
 import os
 import commands
+from directory_functions import Directory
+
 
 def init(pointer):
     global variables
     variables = {}
-    for directory in os.listdir(pointer):
-        subdir = pointer + "/" + directory
-        if not os.path.isdir(subdir):
-            continue
-        commands.expression(subdir)
+    root = Directory(pointer)
+    for directory in root.get_directory_children():
+        commands.expression(directory)

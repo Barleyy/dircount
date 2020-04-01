@@ -9,22 +9,28 @@ class Types(Enum):
     _string = 4
 
 def declare(directory):
-    var_directory = dirmove(directory, 0)
-    types_dict[Types(dirlen(directory))](var_directory)     # TODO mosze jakiś ładny error
+    if directory.dirlen() != 3:
+        raise ValueError("Directory of type 'Declare' must have 3 subdirectories but has".format(directory.dirlen()))
+    var_directory = directory.navigate_to_nth_child(1)
+    name_directory = directory.navigate_to_nth_child(2)
+    types_dict[Types(directory.get_dir_type())](var_directory, name_directory)
 
-def declare_int(directory):
-    print("declaring int")
-    bit_values = [2**i for i in range(16)]
-    def directory_to_bit(directory_):
-        n_subdirs = len(os.listdir(directory + "/bits/" + directory_))
+def declare_int(bits_dir, name_directory):
+    if bits_dir.dirlen() != 16:
+        raise ValueError("First subdirectory of directory of type 'declare int' must have 15 subdirectories but has {}".format(bits_dir.dirlen()))
+    bit_values = [2**i for i in range(15)]
+
+    def directory_to_bit(directory_path):
+        n_subdirs = Directory(directory_path).dirlen()
         if n_subdirs > 1:
-            raise ValueError("Directories inside int declaration can only have either 0 or 1 subdirectories")
+            raise ValueError("Directories inside bits declaration can only have either 0 or 1 subdirectories but {} has {}".format(directory_path, n_subdirs))
         else:
             return n_subdirs
-    bits_dir = dirmove(directory, 0)
-    bits = map(directory_to_bit, os.listdir(bits_dir))
-    res = [b*e for b, e in zip(bit_values, list(bits))] # TODO to se trzeba zapisać
-    print(sum(res))
+
+    bits = list(map(directory_to_bit, bits_dir.get_children_paths()))
+    res = [b*e for b, e in zip(bit_values, bits[1:])]
+    sign = -1 if bits[0] else 1
+    print(sign*sum(res)) # TODO to se trzeba zapisać
 
 
 def declare_float(directory):
