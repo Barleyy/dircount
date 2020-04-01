@@ -30,13 +30,16 @@ def declare_int(bits_dir, name_directory):
 
 
 def declare_float(value_dir, name_directory):
+    if value_dir.dirlen() != 32:
+        raise ValueError(
+            f"First subdirectory of directory {value_dir.parent_path.path} of type 'declare float' must have 32 subdirectories but has {value_dir.dirlen()}")
     print("declaring float")
 
 
 def declare_char(char_dir, name_directory):
     if char_dir.dirlen() != 8:
         raise ValueError(
-            f"First subdirectory of directory {char_dir.parent_path.path} of type 'declare int' must have 8 subdirectories "
+            f"First subdirectory of directory {char_dir.parent_path.path} of type 'declare char' must have 8 subdirectories "
             f"ASCII (0-127) but has {char_dir.dirlen()}")
     char = chr(parse_integer_value(char_dir, False))
     var_name = parse_string_value(name_directory)
@@ -56,7 +59,7 @@ def parse_string_value(chars_dir):
     for char_dir in chars_dir.get_directory_children():
         if char_dir.dirlen() != 8:
             raise ValueError(
-                f"First subdirectory of directory {char_dir.path} of type 'declare int' must have 8 subdirectories "
+                f"First subdirectory of directory {char_dir.path} of type 'declare char' must have 8 subdirectories "
                 f"ASCII (0-127) but has {char_dir.dirlen()}")
         string_array.append(chr(parse_integer_value(char_dir, False)))
     return "".join(string_array)
