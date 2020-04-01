@@ -13,7 +13,7 @@ class Commands(Enum):
 
 def ex_declare(directory):
     if directory.dirlen() != 2:
-        raise ValueError("Directory of type 'Command' must have 2 subdirectories")
+        raise ValueError(f"Directory {directory.path} of type Command.declare must have 2 subdirectories, given {directory.dirlen()}")
     declare(directory.navigate_to_nth_child(1))
 
 def ex_if(directory):
