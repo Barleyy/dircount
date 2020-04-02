@@ -34,4 +34,15 @@ class Directory:
         return len(self.children_paths)
 
     def get_dir_type(self):
+        print("DIR FUNC ",self.navigate_to_nth_child(0).path)
         return self.navigate_to_nth_child(0).dirlen()
+
+    @staticmethod
+    def directory_to_bit(directory_path):
+        n_subdirs = Directory(directory_path).dirlen()
+        if n_subdirs > 1:
+            raise ValueError(
+                "Directories inside bits declaration can only have either 0 or 1 subdirectories but {0} has {1}".format(
+                    directory_path, n_subdirs))
+        else:
+            return n_subdirs

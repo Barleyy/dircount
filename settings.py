@@ -8,4 +8,6 @@ def init(pointer):
     variables = {}
     root = Directory(pointer)
     for directory in root.get_directory_children():
+        print("SETTINGS",directory.path)
         commands.expression(directory)
+    print(variables)
