@@ -66,6 +66,9 @@ def parse_declare_value(data_dir, type_class, basic_type_length):
         return operations_dict[ArithmeticOperation(data_dir.get_dir_type())](
             parse_declare_value(data_dir.navigate_to_nth_child(1), type_class, basic_type_length),
             parse_declare_value(data_dir.navigate_to_nth_child(2), type_class, basic_type_length))
+    elif (data_dir.get_dir_type() >= 2 or data_dir.get_dir_type() <= 6) \
+            and type_class not in supported_complex_operations_classes:
+        raise ValueError("Unsupported operation {0} for {1}".format(ArithmeticOperation(data_dir.get_dir_type()), type_class))
     else:
         raise ValueError(
             types_errors_dict[type_class].format(data_dir.parent_path.path, basic_type_length, data_dir.path))
