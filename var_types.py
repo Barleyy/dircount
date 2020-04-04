@@ -107,12 +107,12 @@ def parse_integer_value(parsing_int_data):
 
 def parse_float_value(parsing_float_data):
     value_dir = parsing_float_data[0]
-    mantissa_values = [2 ** -i for i in range(1, 24)]
-    exponent_values = [2 ** i for i in range(7, -1, -1)]
+    mantissa_values = [2 ** -i for i in range(23, 0,-1)]
+    exponent_values = [2 ** i for i in range(8)]
     bits = list(map(Directory.directory_to_bit, value_dir.get_children_paths()))
-    exponent = sum([b * e for b, e in zip(exponent_values, bits[1:8])]) - 127
-    mantissa = 1 + sum([b * e for b, e in zip(mantissa_values, bits[9:])])
-    sign = (1, -1)[bits[0]]
+    exponent = sum([b * e for b, e in zip(exponent_values, bits[23:32])]) - 127
+    mantissa = 1 + sum([b * e for b, e in zip(mantissa_values, bits[:23])])
+    sign = (1, -1)[bits[31]]
     value = sign * mantissa * math.pow(2, exponent)
     return value
 
