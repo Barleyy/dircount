@@ -1,7 +1,6 @@
-import sys, os, settings, commands
-from directory_functions import *
-from commands import *
+import sys
 
+from commands import *
 
 if len(sys.argv) > 1:
     dirs = sys.argv[1]
