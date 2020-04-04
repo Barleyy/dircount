@@ -2,8 +2,9 @@ import math
 from enum import Enum
 
 import settings
-from arithmetic_operations import operations_dict, ArithmeticOperation
 from directory_functions import *
+from operations import operations_dict, operation_type, OperationType, ArithmeticOperation, ComparisonOperation, \
+    StringOperation
 
 
 class Types(Enum):
@@ -26,6 +27,8 @@ def declare(directory):
 
 def declare_int(bits_dir, name_directory):
     value = parse_declare_value(bits_dir, Types.int, 16)
+    if value.__class__ is not int:
+        raise ValueError("Type mismatch: expected {0} got {1}".format(int, value.__class__))
     var_name = parse_string_value([name_directory])
     attach_variable(var_name, value)
     print(f"VAR TYPE INT {var_name} = {value}")
@@ -33,6 +36,8 @@ def declare_int(bits_dir, name_directory):
 
 def declare_float(value_dir, name_directory):
     value = parse_declare_value(value_dir, Types.float, 32)
+    if value.__class__ is not float:
+        raise ValueError("Type mismatch: expected {0} got {1}".format(float, value.__class__))
     var_name = parse_string_value([name_directory])
     attach_variable(var_name, value)
     print(f"VAR TYPE FLOAT {var_name} = {value}")
@@ -40,16 +45,29 @@ def declare_float(value_dir, name_directory):
 
 def declare_char(char_dir, name_directory):
     value = parse_declare_value(char_dir, Types.char, 8)
+    if value.__class__ is not str and value.len() > 1:
+        raise ValueError("Type mismatch: expected {0} got {1}".format("char", value.__class__))
     var_name = parse_string_value([name_directory])
     attach_variable(var_name, value)
     print(f"VAR TYPE CHAR {var_name} = {value}")
 
 
 def declare_string(chars_dir, name_directory):
-    string = parse_declare_value(chars_dir, Types.string, 8)
+    value = parse_declare_value(chars_dir, Types.string, 8)
+    if value.__class__ is not str:
+        raise ValueError("Type mismatch: expected {0} got {1}".format(str, value.__class__))
     var_name = parse_string_value([name_directory])
-    attach_variable(var_name, string)
-    print(f"VAR TYPE STRING {var_name} = {string}")
+    attach_variable(var_name, value)
+    print(f"VAR TYPE STRING {var_name} = {value}")
+
+
+def declare_boolean(bit_dir, name_directory):
+    value = parse_declare_value(bit_dir, Types.boolean, 1)
+    if value.__class__ is not bool:
+        raise ValueError("Type mismatch: expected {0} got {1}".format(bool, value.__class__))
+    var_name = parse_string_value([name_directory])
+    attach_variable(var_name, value)
+    print(f"VAR TYPE STRING {var_name} = {value}")
 
 
 def parse_declare_value(data_dir, type_class, basic_type_length):
@@ -60,15 +78,16 @@ def parse_declare_value(data_dir, type_class, basic_type_length):
     if data_dir.dirlen() == basic_type_length or data_dir.get_dir_type() == basic_type_length:
         return parsing_function([data_dir, True])
 
-    elif data_dir.dirlen() == 3 and ((data_dir.get_dir_type() < 2 or data_dir.get_dir_type() > 6)
-                                     or type_class in supported_complex_operations_classes):
-
-        return operations_dict[ArithmeticOperation(data_dir.get_dir_type())](
-            parse_declare_value(data_dir.navigate_to_nth_child(1), type_class, basic_type_length),
-            parse_declare_value(data_dir.navigate_to_nth_child(2), type_class, basic_type_length))
-    elif (data_dir.get_dir_type() >= 2 or data_dir.get_dir_type() <= 6) \
-            and type_class not in supported_complex_operations_classes:
-        raise ValueError("Unsupported operation {0} for {1}".format(ArithmeticOperation(data_dir.get_dir_type()), type_class))
+    elif data_dir.dirlen() == 3:
+        operation_type_dir = data_dir.navigate_to_nth_child(0)
+        operation_type_enum = operation_type[OperationType(operation_type_dir.get_dir_type())]
+        try:
+            return operations_dict[operation_type_enum(operation_type_dir.navigate_to_nth_child(1).dirlen())](
+                parse_declare_value(data_dir.navigate_to_nth_child(1), type_class, basic_type_length),
+                parse_declare_value(data_dir.navigate_to_nth_child(2), type_class, basic_type_length))
+        except:
+            raise ValueError(
+                "Unsupported operation {0} for {1}".format(operation_type_enum(data_dir.get_dir_type()), type_class))
     else:
         raise ValueError(
             types_errors_dict[type_class].format(data_dir.parent_path.path, basic_type_length, data_dir.path))
@@ -117,6 +136,11 @@ def parse_string_value(parsing_string_data):
     return "".join(string_array)
 
 
+def parse_boolean_value(parsing_boolean_data):
+    boolean_dir = parsing_boolean_data[0]
+    return bool(boolean_dir.get_dir_type())
+
+
 def attach_variable(name, value):
     if name in settings.variables:
         raise ValueError(f"Variable {name} already defined to {settings.variables[name]}")
@@ -129,14 +153,15 @@ types_dict = {
     Types.float: declare_float,
     Types.char: declare_char,
     Types.string: declare_string,
-    # Types.boolean: declare_boolean todo add boolean handling
+    Types.boolean: declare_boolean
 }
 
 parsing_dict = {
     Types.int: parse_integer_value,
     Types.float: parse_float_value,
     Types.char: parse_char_value,
-    Types.string: parse_string_value
+    Types.string: parse_string_value,
+    Types.boolean: parse_boolean_value
 }
 
 types_errors_dict = {
@@ -147,8 +172,11 @@ types_errors_dict = {
     Types.char: "Either first subdirectory of directory {0} of type 'declare char' must have 8 subdirectories or "
                 "operation returning char value at level {2} expected",
     Types.string: "Either data subdir of directory {0} of type 'declare string' must have 8 subdirectories or "
-                  "operation returning string value at level {2} expected"
-
+                  "operation returning string value at level {2} expected",
+    Types.boolean: "Either first subdirectory of directory {0} of type 'declare boolean' must have 0-1 subdirectories "
+                   "or operation returning boolean value at level {2} expected"
 }
 
-supported_complex_operations_classes = [Types.int, Types.float]
+types_operations_dict = {ArithmeticOperation: [Types.int, Types.float],
+                         ComparisonOperation: [Types.int, Types.float, Types.string, Types.char],
+                         StringOperation: [Types.string, Types.char]}
