@@ -1,7 +1,5 @@
-from enum import Enum
-import settings
+from logical_commends import _if
 from var_types import *
-from directory_functions import *
 
 
 class Commands(Enum):
@@ -28,7 +26,10 @@ def ex_let(directory):
 
 
 def ex_if(directory):
-    return
+    if directory.dirlen() != 2:
+        raise ValueError(
+            f"Directory {directory.path} of type Command.if have 2 subdirectories , given {directory.dirlen()}")
+    _if(directory.navigate_to_nth_child(1))
 
 
 def ex_while(directory):

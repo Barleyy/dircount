@@ -83,24 +83,42 @@ def declare_boolean(bit_dir, name_directory):
     return var_name, value
 
 
+def operation_parsing(data_dir):
+    # operation tree ends when 2 operation values have equal dirlens
+    operation_type_dir = data_dir.navigate_to_nth_child(0)
+    operation_type_enum = operation_type[OperationType(operation_type_dir.get_dir_type())]
+    if data_dir.navigate_to_nth_child(1).dirlen() == data_dir.navigate_to_nth_child(
+            2).dirlen() and data_dir.navigate_to_nth_child(1).dirlen() != 3:  # leaves of operation ast
+        type = len_types[data_dir.navigate_to_nth_child(1).dirlen()]
+        val1 = parse_declare_value(data_dir.navigate_to_nth_child(1), type, types_len[type])
+        val2 = parse_declare_value(data_dir.navigate_to_nth_child(1), type, types_len[type])
+    else:  # one of args is operation
+        is_operation_at_first = data_dir.navigate_to_nth_child(1).dirlen() == 3
+        if is_operation_at_first:
+            val1 = operation_parsing(data_dir.navigate_to_nth_child(1))
+        else:
+            type = len_types[data_dir.navigate_to_nth_child(1).dirlen()]
+            val1 = parse_declare_value(data_dir.navigate_to_nth_child(1), type, types_len[type])
+        is_operation_at_second = data_dir.navigate_to_nth_child(2).dirlen() == 3
+        if is_operation_at_second:
+            val2 = operation_parsing(data_dir.navigate_to_nth_child(2))
+        else:
+            type = len_types[data_dir.navigate_to_nth_child(2).dirlen()]
+            val2 = parse_declare_value(data_dir.navigate_to_nth_child(2), type, types_len[type])
+    return operations_dict[operation_type_enum(operation_type_dir.navigate_to_nth_child(1).dirlen())](val1, val2)
+
+
 def parse_declare_value(data_dir, type_class, basic_type_length):
     print(f"VAR TYPES Parsing declare value of type {type_class}")
 
     parsing_function = parsing_dict[type_class]
 
-    if data_dir.dirlen() == basic_type_length or data_dir.get_dir_type() == basic_type_length:
+    if data_dir.dirlen() == basic_type_length:
         return parsing_function([data_dir, True])
 
-    elif data_dir.dirlen() == 3:
-        operation_type_dir = data_dir.navigate_to_nth_child(0)
-        operation_type_enum = operation_type[OperationType(operation_type_dir.get_dir_type())]
-        try:
-            return operations_dict[operation_type_enum(operation_type_dir.navigate_to_nth_child(1).dirlen())](
-                parse_declare_value(data_dir.navigate_to_nth_child(1), type_class, basic_type_length),
-                parse_declare_value(data_dir.navigate_to_nth_child(2), type_class, basic_type_length))
-        except:
-            raise ValueError(
-                "Unsupported operation {0} for {1}".format(operation_type_enum(data_dir.get_dir_type()), type_class))
+    elif data_dir.dirlen() == 3:  # operation result
+        return operation_parsing(data_dir)
+
     else:
         raise ValueError(
             types_errors_dict[type_class].format(data_dir.parent_path.path, basic_type_length, data_dir.path))
@@ -140,7 +158,7 @@ def parse_string_value(parsing_string_data):
     chars_dir = parsing_string_data[0]
 
     string_array = []
-    for char_dir in chars_dir.get_directory_children():
+    for char_dir in chars_dir.navigate_to_nth_child(0).get_directory_children():
         if char_dir.dirlen() != 8:
             raise ValueError(
                 f"First subdirectory of directory {char_dir.path} of type 'declare char' must have 8 subdirectories "
@@ -200,15 +218,24 @@ types_errors_dict = {
 }
 
 types_operations_dict = {ArithmeticOperation: [Types.int, Types.float],
-                         ComparisonOperation: [Types.int, Types.float, Types.string, Types.char],
+                         ComparisonOperation: [Types.int, Types.float, Types.string, Types.char, Types.boolean],
                          StringOperation: [Types.string, Types.char]}
 
+# NONE TYPE CAN HAS LENGTH 3!!!
 types_len = {
     Types.int: 16,
     Types.float: 32,
     Types.char: 8,
-    Types.string: 8,
+    Types.string: 2,
     Types.boolean: 1
+}
+
+len_types = {
+    16: Types.int,
+    32: Types.float,
+    8: Types.char,
+    1: Types.boolean,
+    2: Types.string
 }
 
 
