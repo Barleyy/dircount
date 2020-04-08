@@ -22,52 +22,65 @@ def declare(directory):
     var_directory = directory.navigate_to_nth_child(1)
     print(f"VAR TYPES {directory.path}")
     name_directory = directory.navigate_to_nth_child(2)
-    types_dict[Types(directory.get_dir_type())](var_directory, name_directory)
+    (var_name, value) = types_dict[Types(directory.get_dir_type())](var_directory, name_directory)
+    attach_variable(name_directory.path, var_name, value, Types(directory.get_dir_type()))
+
+
+def let(directory):
+    if directory.dirlen() != 2:
+        raise ValueError(
+            f"Directory {directory.path} of type 'Let' must have 2 subdirectories varlink, value but has {directory.dirlen()}")
+    var_directory = directory.navigate_to_nth_child(1)
+    print(f"VAR TYPES {directory.path}")
+    var_link = directory.navigate_to_nth_child(0).get_link_path()
+    var_type = settings.variables[var_link][2]
+    new_value = parse_declare_value(var_directory, var_type, types_len[var_type])
+    update_var_value(var_link, new_value)
 
 
 def declare_int(bits_dir, name_directory):
-    value = parse_declare_value(bits_dir, Types.int, 16)
+    value = parse_declare_value(bits_dir, Types.int, types_len[Types.int])
     if value.__class__ is not int:
         raise ValueError("Type mismatch: expected {0} got {1}".format(int, value.__class__))
     var_name = parse_string_value([name_directory])
-    attach_variable(var_name, value)
     print(f"VAR TYPE INT {var_name} = {value}")
+    return var_name, value
 
 
 def declare_float(value_dir, name_directory):
-    value = parse_declare_value(value_dir, Types.float, 32)
+    value = parse_declare_value(value_dir, Types.float, types_len[Types.float])
     if value.__class__ is not float:
         raise ValueError("Type mismatch: expected {0} got {1}".format(float, value.__class__))
     var_name = parse_string_value([name_directory])
-    attach_variable(var_name, value)
     print(f"VAR TYPE FLOAT {var_name} = {value}")
+    return var_name, value
 
 
 def declare_char(char_dir, name_directory):
-    value = parse_declare_value(char_dir, Types.char, 8)
+    value = parse_declare_value(char_dir, Types.char, types_len[Types.char])
     if value.__class__ is not str and value.len() > 1:
         raise ValueError("Type mismatch: expected {0} got {1}".format("char", value.__class__))
     var_name = parse_string_value([name_directory])
-    attach_variable(var_name, value)
     print(f"VAR TYPE CHAR {var_name} = {value}")
+    return var_name, value
 
 
 def declare_string(chars_dir, name_directory):
-    value = parse_declare_value(chars_dir, Types.string, 8)
+    value = parse_declare_value(chars_dir, Types.string, types_len[Types.string])
     if value.__class__ is not str:
         raise ValueError("Type mismatch: expected {0} got {1}".format(str, value.__class__))
     var_name = parse_string_value([name_directory])
-    attach_variable(var_name, value)
     print(f"VAR TYPE STRING {var_name} = {value}")
+    return var_name, value
 
 
 def declare_boolean(bit_dir, name_directory):
-    value = parse_declare_value(bit_dir, Types.boolean, 1)
+    value = parse_declare_value(bit_dir, Types.boolean, types_len[Types.boolean])
     if value.__class__ is not bool:
         raise ValueError("Type mismatch: expected {0} got {1}".format(bool, value.__class__))
     var_name = parse_string_value([name_directory])
-    attach_variable(var_name, value)
     print(f"VAR TYPE STRING {var_name} = {value}")
+    return var_name, value
 
 
 def parse_declare_value(data_dir, type_class, basic_type_length):
@@ -107,7 +120,7 @@ def parse_integer_value(parsing_int_data):
 
 def parse_float_value(parsing_float_data):
     value_dir = parsing_float_data[0]
-    mantissa_values = [2 ** -i for i in range(23, 0,-1)]
+    mantissa_values = [2 ** -i for i in range(23, 0, -1)]
     exponent_values = [2 ** i for i in range(8)]
     bits = list(map(Directory.directory_to_bit, value_dir.get_children_paths()))
     exponent = sum([b * e for b, e in zip(exponent_values, bits[23:32])]) - 127
@@ -141,11 +154,20 @@ def parse_boolean_value(parsing_boolean_data):
     return bool(boolean_dir.get_dir_type())
 
 
-def attach_variable(name, value):
-    if name in settings.variables:
+def attach_variable(path, name, value, clazz):
+    if path in settings.variables:
         raise ValueError(f"Variable {name} already defined to {settings.variables[name]}")
     else:
-        settings.variables[name] = value
+        settings.variables[path] = (name, value, clazz)
+
+
+def update_var_value(path, value):
+    if path not in settings.variables:
+        raise ValueError(f"Variable at {path} not defined")
+    else:
+        var_properties = list(settings.variables[path])
+        var_properties[1] = value
+        settings.variables[path] = tuple(var_properties)
 
 
 types_dict = {
@@ -180,3 +202,16 @@ types_errors_dict = {
 types_operations_dict = {ArithmeticOperation: [Types.int, Types.float],
                          ComparisonOperation: [Types.int, Types.float, Types.string, Types.char],
                          StringOperation: [Types.string, Types.char]}
+
+types_len = {
+    Types.int: 16,
+    Types.float: 32,
+    Types.char: 8,
+    Types.string: 8,
+    Types.boolean: 1
+}
+
+
+class char:
+    def __init__(self):
+        self.data = None

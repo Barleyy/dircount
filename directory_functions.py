@@ -37,6 +37,9 @@ class Directory:
         print("DIR FUNC ",self.navigate_to_nth_child(0).path)
         return self.navigate_to_nth_child(0).dirlen()
 
+    def get_link_path(self):
+        return os.readlink(self.path)[:-1]
+
     @staticmethod
     def directory_to_bit(directory_path):
         n_subdirs = Directory(directory_path).dirlen()
