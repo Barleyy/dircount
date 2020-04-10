@@ -21,8 +21,9 @@ def _if(directory):
             print("COMPLEX IF FALSE", directory.path)
             commands.expression(directory)
 
+
 def _while(directory):
-    if directory.dirlen() != 2: #logical condition, list of commands
+    if directory.dirlen() != 2:  # logical condition, list of commands
         raise ValueError(f"Expected 2 dirs at {directory.path} for while command, given {directory.dirlen()}")
 
     condition_dir = directory.navigate_to_nth_child(0)
@@ -33,4 +34,4 @@ def _while(directory):
         for commands_dir in root.get_directory_children():
             print("COMPLEX WHEN command at", commands_dir.path)
             commands.expression(commands_dir)
-        counter+=1
+        counter += 1
