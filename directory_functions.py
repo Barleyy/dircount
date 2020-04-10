@@ -40,6 +40,9 @@ class Directory:
     def get_link_path(self):
         return os.readlink(self.path)[:-1]
 
+    def is_link(self):
+        return os.path.islink(self.path)
+
     @staticmethod
     def directory_to_bit(directory_path):
         n_subdirs = Directory(directory_path).dirlen()

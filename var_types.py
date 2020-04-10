@@ -87,11 +87,30 @@ def operation_parsing(data_dir):
     # operation tree ends when 2 operation values have equal dirlens
     operation_type_dir = data_dir.navigate_to_nth_child(0)
     operation_type_enum = operation_type[OperationType(operation_type_dir.get_dir_type())]
-    if data_dir.navigate_to_nth_child(1).dirlen() == data_dir.navigate_to_nth_child(
-            2).dirlen() and data_dir.navigate_to_nth_child(1).dirlen() != 3:  # leaves of operation ast
-        type = len_types[data_dir.navigate_to_nth_child(1).dirlen()]
-        val1 = parse_declare_value(data_dir.navigate_to_nth_child(1), type, types_len[type])
-        val2 = parse_declare_value(data_dir.navigate_to_nth_child(1), type, types_len[type])
+    is_link_val1 = data_dir.navigate_to_nth_child(1).is_link()
+    is_link_val2 = data_dir.navigate_to_nth_child(2).is_link()
+
+    val1 = None
+    val2 = None
+    if is_link_val1:
+        print("A",settings.variables[data_dir.navigate_to_nth_child(1).get_link_path()])
+        val1 = settings.variables[data_dir.navigate_to_nth_child(1).get_link_path()][1]
+        print("B",val1)
+
+    if is_link_val2:
+        print("C",settings.variables[data_dir.navigate_to_nth_child(1).get_link_path()])
+        val2 = settings.variables[data_dir.navigate_to_nth_child(2).get_link_path()][1]
+        print("D",val2)
+
+    if (data_dir.navigate_to_nth_child(1).dirlen() == data_dir.navigate_to_nth_child(
+            2).dirlen() and data_dir.navigate_to_nth_child(1).dirlen() != 3) or is_link_val1 or is_link_val2:  # leaves of operation ast
+        type = len_types[data_dir.navigate_to_nth_child(2).dirlen()]
+        print("E",data_dir.navigate_to_nth_child(2).path)
+        print("F",is_link_val1)
+        val1 = val1 if is_link_val1 else parse_declare_value(data_dir.navigate_to_nth_child(1), type, types_len[type])
+        print("G",val1)
+        val2 = val2 if is_link_val2 else parse_declare_value(data_dir.navigate_to_nth_child(2), type, types_len[type])
+        print("H",val2)
     else:  # one of args is operation
         is_operation_at_first = data_dir.navigate_to_nth_child(1).dirlen() == 3
         if is_operation_at_first:
@@ -107,12 +126,13 @@ def operation_parsing(data_dir):
             val2 = parse_declare_value(data_dir.navigate_to_nth_child(2), type, types_len[type])
     return operations_dict[operation_type_enum(operation_type_dir.navigate_to_nth_child(1).dirlen())](val1, val2)
 
-
 def parse_declare_value(data_dir, type_class, basic_type_length):
     print(f"VAR TYPES Parsing declare value of type {type_class}")
-
+    print(data_dir.path)
     parsing_function = parsing_dict[type_class]
-
+    print(parsing_function.__name__)
+    print(data_dir.dirlen())
+    print(basic_type_length)
     if data_dir.dirlen() == basic_type_length:
         return parsing_function([data_dir, True])
 
