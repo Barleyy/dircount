@@ -23,10 +23,12 @@ class ComparisonOperation(Enum):
     geq = 4
     eq = 5
 
+
 class StringOperation(Enum):
     concat = 1
     eq = 2
     neq = 3
+
 
 global operations_dict
 global operation_type
@@ -45,7 +47,7 @@ operations_dict = {
     ComparisonOperation.eq: lambda x, y: x == y,
     StringOperation.concat: lambda x, y: x + y,
     StringOperation.eq: lambda x, y: x == y,
-    StringOperation.neq: lambda x, y: x !=y
+    StringOperation.neq: lambda x, y: x != y
 }
 
 operation_type = {

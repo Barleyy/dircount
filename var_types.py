@@ -1,18 +1,5 @@
-import math
-from enum import Enum
-
 import settings
-from directory_functions import *
-from operations import operations_dict, operation_type, OperationType, ArithmeticOperation, ComparisonOperation, \
-    StringOperation
-
-
-class Types(Enum):
-    int = 1
-    float = 2
-    char = 3
-    string = 4
-    boolean = 5
+from value_parsing import parse_value, types_len, parse_string_value, Types
 
 
 def declare(directory):
@@ -20,9 +7,10 @@ def declare(directory):
         raise ValueError(
             f"Directory {directory.path} of type 'Declare' must have 3 subdirectories but has {directory.dirlen()}")
     var_directory = directory.navigate_to_nth_child(1)
-    print(f"VAR TYPES {directory.path}")
+    print(f"VAR TYPES DECLARE {directory.path}")
     name_directory = directory.navigate_to_nth_child(2)
     (var_name, value) = types_dict[Types(directory.get_dir_type())](var_directory, name_directory)
+
     attach_variable(name_directory.path, var_name, value, Types(directory.get_dir_type()))
 
 
@@ -31,15 +19,15 @@ def let(directory):
         raise ValueError(
             f"Directory {directory.path} of type 'Let' must have 2 subdirectories varlink, value but has {directory.dirlen()}")
     var_directory = directory.navigate_to_nth_child(1)
-    print(f"VAR TYPES {directory.path}")
+    print(f"VAR TYPES LET {directory.path}")
     var_link = directory.navigate_to_nth_child(0).get_link_path()
     var_type = settings.variables[var_link][2]
-    new_value = parse_declare_value(var_directory, var_type, types_len[var_type])
+    new_value = parse_value(var_directory, var_type, types_len[var_type])
     update_var_value(var_link, new_value)
 
 
 def declare_int(bits_dir, name_directory):
-    value = parse_declare_value(bits_dir, Types.int, types_len[Types.int])
+    value = parse_value(bits_dir, Types.int, types_len[Types.int])
     if value.__class__ is not int:
         raise ValueError("Type mismatch: expected {0} got {1}".format(int, value.__class__))
     var_name = parse_string_value([name_directory])
@@ -48,7 +36,7 @@ def declare_int(bits_dir, name_directory):
 
 
 def declare_float(value_dir, name_directory):
-    value = parse_declare_value(value_dir, Types.float, types_len[Types.float])
+    value = parse_value(value_dir, Types.float, types_len[Types.float])
     if value.__class__ is not float:
         raise ValueError("Type mismatch: expected {0} got {1}".format(float, value.__class__))
     var_name = parse_string_value([name_directory])
@@ -57,7 +45,7 @@ def declare_float(value_dir, name_directory):
 
 
 def declare_char(char_dir, name_directory):
-    value = parse_declare_value(char_dir, Types.char, types_len[Types.char])
+    value = parse_value(char_dir, Types.char, types_len[Types.char])
     if value.__class__ is not str and value.len() > 1:
         raise ValueError("Type mismatch: expected {0} got {1}".format("char", value.__class__))
     var_name = parse_string_value([name_directory])
@@ -66,7 +54,7 @@ def declare_char(char_dir, name_directory):
 
 
 def declare_string(chars_dir, name_directory):
-    value = parse_declare_value(chars_dir, Types.string, types_len[Types.string])
+    value = parse_value(chars_dir, Types.string, types_len[Types.string])
     if value.__class__ is not str:
         raise ValueError("Type mismatch: expected {0} got {1}".format(str, value.__class__))
     var_name = parse_string_value([name_directory])
@@ -75,7 +63,7 @@ def declare_string(chars_dir, name_directory):
 
 
 def declare_boolean(bit_dir, name_directory):
-    value = parse_declare_value(bit_dir, Types.boolean, types_len[Types.boolean])
+    value = parse_value(bit_dir, Types.boolean, types_len[Types.boolean])
     if value.__class__ is not bool:
         raise ValueError("Type mismatch: expected {0} got {1}".format(bool, value.__class__))
     var_name = parse_string_value([name_directory])
@@ -83,80 +71,18 @@ def declare_boolean(bit_dir, name_directory):
     return var_name, value
 
 
-def parse_declare_value(data_dir, type_class, basic_type_length):
-    print(f"VAR TYPES Parsing declare value of type {type_class}")
-
-    parsing_function = parsing_dict[type_class]
-
-    if data_dir.dirlen() == basic_type_length or data_dir.get_dir_type() == basic_type_length:
-        return parsing_function([data_dir, True])
-
-    elif data_dir.dirlen() == 3:
-        operation_type_dir = data_dir.navigate_to_nth_child(0)
-        operation_type_enum = operation_type[OperationType(operation_type_dir.get_dir_type())]
-        try:
-            return operations_dict[operation_type_enum(operation_type_dir.navigate_to_nth_child(1).dirlen())](
-                parse_declare_value(data_dir.navigate_to_nth_child(1), type_class, basic_type_length),
-                parse_declare_value(data_dir.navigate_to_nth_child(2), type_class, basic_type_length))
-        except:
-            raise ValueError(
-                "Unsupported operation {0} for {1}".format(operation_type_enum(data_dir.get_dir_type()), type_class))
-    else:
-        raise ValueError(
-            types_errors_dict[type_class].format(data_dir.parent_path.path, basic_type_length, data_dir.path))
+def get_var_names_from_vars_dict(variables):
+    return map(lambda var: var[0], list(variables.values()))
 
 
-def parse_integer_value(parsing_int_data):
-    data_dir = parsing_int_data[0]
-    is_number = parsing_int_data[1]
-    range_value = data_dir.dirlen() - 1
-    start_index = (0, 1)[is_number]
-    bit_values = [2 ** i for i in range(range_value)]
-    bits = list(map(Directory.directory_to_bit, data_dir.get_children_paths()))
-    res = [b * e for b, e in zip(bit_values, bits[start_index:])]
-    sign = (1, -1)[is_number and bits[0]]
-    return sign * sum(res)
-
-
-def parse_float_value(parsing_float_data):
-    value_dir = parsing_float_data[0]
-    mantissa_values = [2 ** -i for i in range(23, 0, -1)]
-    exponent_values = [2 ** i for i in range(8)]
-    bits = list(map(Directory.directory_to_bit, value_dir.get_children_paths()))
-    exponent = sum([b * e for b, e in zip(exponent_values, bits[23:32])]) - 127
-    mantissa = 1 + sum([b * e for b, e in zip(mantissa_values, bits[:23])])
-    sign = (1, -1)[bits[31]]
-    value = sign * mantissa * math.pow(2, exponent)
-    return value
-
-
-def parse_char_value(parsing_char_data):
-    char_dir = parsing_char_data[0]
-    char = chr(parse_integer_value([char_dir, False]))
-    return char
-
-
-def parse_string_value(parsing_string_data):
-    chars_dir = parsing_string_data[0]
-
-    string_array = []
-    for char_dir in chars_dir.get_directory_children():
-        if char_dir.dirlen() != 8:
-            raise ValueError(
-                f"First subdirectory of directory {char_dir.path} of type 'declare char' must have 8 subdirectories "
-                f"ASCII (0-127) but has {char_dir.dirlen()}")
-        string_array.append(chr(parse_integer_value([char_dir, False])))
-    return "".join(string_array)
-
-
-def parse_boolean_value(parsing_boolean_data):
-    boolean_dir = parsing_boolean_data[0]
-    return bool(boolean_dir.get_dir_type())
+def get_var_path_by_varname(variables, name):
+    # passing variables dict for function impl
+    return
 
 
 def attach_variable(path, name, value, clazz):
-    if path in settings.variables:
-        raise ValueError(f"Variable {name} already defined to {settings.variables[name]}")
+    if path in settings.variables or name in get_var_names_from_vars_dict(settings.variables):
+        raise ValueError(f"Variable {name} already defined")
     else:
         settings.variables[path] = (name, value, clazz)
 
@@ -176,39 +102,6 @@ types_dict = {
     Types.char: declare_char,
     Types.string: declare_string,
     Types.boolean: declare_boolean
-}
-
-parsing_dict = {
-    Types.int: parse_integer_value,
-    Types.float: parse_float_value,
-    Types.char: parse_char_value,
-    Types.string: parse_string_value,
-    Types.boolean: parse_boolean_value
-}
-
-types_errors_dict = {
-    Types.int: "Either first subdirectory of directory {0} of type 'declare int' must have {1} subdirectories or "
-               "operation returning int value at level {2} expected",
-    Types.float: "Either first subdirectory of directory {0} of type 'declare float' must have {1} subdirectories or "
-                 "operation returning float value at level {2} expected",
-    Types.char: "Either first subdirectory of directory {0} of type 'declare char' must have 8 subdirectories or "
-                "operation returning char value at level {2} expected",
-    Types.string: "Either data subdir of directory {0} of type 'declare string' must have 8 subdirectories or "
-                  "operation returning string value at level {2} expected",
-    Types.boolean: "Either first subdirectory of directory {0} of type 'declare boolean' must have 0-1 subdirectories "
-                   "or operation returning boolean value at level {2} expected"
-}
-
-types_operations_dict = {ArithmeticOperation: [Types.int, Types.float],
-                         ComparisonOperation: [Types.int, Types.float, Types.string, Types.char],
-                         StringOperation: [Types.string, Types.char]}
-
-types_len = {
-    Types.int: 16,
-    Types.float: 32,
-    Types.char: 8,
-    Types.string: 8,
-    Types.boolean: 1
 }
 
 
