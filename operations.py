@@ -34,6 +34,7 @@ class StringOperation(Enum):
 class ListOperation(Enum):
     get = 1
     concat = 2
+    append = 3
 
 
 global operations_dict
@@ -55,7 +56,8 @@ operations_dict = {
     StringOperation.eq: lambda x, y: x == y,
     StringOperation.neq: lambda x, y: x != y,
     ListOperation.get: lambda x, y: x[y],
-    ListOperation.concat: lambda x, y: x + y
+    ListOperation.concat: lambda x, y: x + y,
+    ListOperation.append: lambda x, y: x.append(y)
 }
 
 operation_type = {

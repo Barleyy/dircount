@@ -13,6 +13,7 @@ def declare(directory):
     (var_name, value) = parse_and_validate(var_directory, name_directory, types_dict[Types(directory.get_dir_type())])
 
     attach_variable(name_directory.path, var_name, value, Types(directory.get_dir_type()))
+    return name_directory.path, var_name, value
 
 
 def let(directory):
