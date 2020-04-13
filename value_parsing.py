@@ -2,7 +2,7 @@ import math
 from enum import Enum
 
 from directory_functions import Directory
-from operation_parsing import operation_parsing
+from operation_parsing import operation_parsing, parse_operation_argument
 from operations import ArithmeticOperation, ComparisonOperation, StringOperation
 
 
@@ -12,6 +12,7 @@ class Types(Enum):
     char = 3
     string = 4
     boolean = 5
+    list = 6
 
 
 def parse_generic_value(data_dir, type_class, basic_type_length):
@@ -87,12 +88,22 @@ def parse_boolean_value(parsing_boolean_data):
     return bool(boolean_dir.get_dir_type())
 
 
+def parse_list_value(parsing_list_data):
+    vals_dir = parsing_list_data[0]
+
+    list_array = []
+    for val in vals_dir.navigate_to_nth_child(0).get_directory_children():
+        list_array.append(parse_operation_argument(val))
+    return list_array
+
+
 parsing_dict = {
     Types.int: parse_integer_value,
     Types.float: parse_float_value,
     Types.char: parse_char_value,
     Types.string: parse_string_value,
-    Types.boolean: parse_boolean_value
+    Types.boolean: parse_boolean_value,
+    Types.list: parse_list_value
 }
 
 types_errors_dict = {
@@ -118,6 +129,7 @@ types_len = {
     Types.float: 32,
     Types.char: 8,
     Types.string: 2,
+    Types.list: 4,
     Types.boolean: 1
 }
 
@@ -126,5 +138,6 @@ len_types = {
     32: Types.float,
     8: Types.char,
     1: Types.boolean,
+    4: Types.list,
     2: Types.string
 }

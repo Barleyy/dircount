@@ -5,6 +5,7 @@ class OperationType(Enum):
     arithmetic = 1
     comparison = 2
     string = 3
+    list = 4
 
 
 class ArithmeticOperation(Enum):
@@ -30,6 +31,11 @@ class StringOperation(Enum):
     neq = 3
 
 
+class ListOperation(Enum):
+    get = 1
+    concat = 2
+
+
 global operations_dict
 global operation_type
 
@@ -47,11 +53,14 @@ operations_dict = {
     ComparisonOperation.eq: lambda x, y: x == y,
     StringOperation.concat: lambda x, y: x + y,
     StringOperation.eq: lambda x, y: x == y,
-    StringOperation.neq: lambda x, y: x != y
+    StringOperation.neq: lambda x, y: x != y,
+    ListOperation.get: lambda x, y: x[y],
+    ListOperation.concat: lambda x, y: x + y
 }
 
 operation_type = {
     OperationType.arithmetic: ArithmeticOperation,
     OperationType.comparison: ComparisonOperation,
-    OperationType.string: StringOperation
+    OperationType.string: StringOperation,
+    OperationType.list: ListOperation,
 }
