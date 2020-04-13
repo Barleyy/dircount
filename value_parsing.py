@@ -13,6 +13,7 @@ class Types(Enum):
     string = 4
     boolean = 5
     list = 6
+    dict = 7
 
 
 def parse_generic_value(data_dir, type_class, basic_type_length):
@@ -97,13 +98,26 @@ def parse_list_value(parsing_list_data):
     return list_array
 
 
+def parse_dict_value(parsing_dict_data):
+    vals_dir = parsing_dict_data[0]
+
+    _dict = {}
+    for pair in vals_dir.navigate_to_nth_child(0).get_directory_children():
+        if pair.dirlen() != 2:
+            raise ValueError(
+                f"Invalid number of dirs {pair.path} Each entry in dictionary must have 2 dirs, {pair.dirlen()} given")
+        _dict[parse_operation_argument(pair.navigate_to_nth_child(0))] = parse_operation_argument(pair.navigate_to_nth_child(1))
+    return _dict
+
+
 parsing_dict = {
     Types.int: parse_integer_value,
     Types.float: parse_float_value,
     Types.char: parse_char_value,
     Types.string: parse_string_value,
     Types.boolean: parse_boolean_value,
-    Types.list: parse_list_value
+    Types.list: parse_list_value,
+    Types.dict: parse_dict_value
 }
 
 types_errors_dict = {
@@ -130,6 +144,7 @@ types_len = {
     Types.char: 8,
     Types.string: 2,
     Types.list: 4,
+    Types.dict: 5,
     Types.boolean: 1
 }
 
@@ -139,5 +154,6 @@ len_types = {
     8: Types.char,
     1: Types.boolean,
     4: Types.list,
+    5: Types.dict,
     2: Types.string
 }

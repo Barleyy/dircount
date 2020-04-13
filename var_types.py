@@ -68,7 +68,8 @@ types_dict = {
     Types.char: str,
     Types.string: str,
     Types.boolean: bool,
-    Types.list: list
+    Types.list: list,
+    Types.dict: dict
 }
 
 
