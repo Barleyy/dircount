@@ -1,6 +1,7 @@
 from enum import Enum
 
 from complex_operations import _if, _while, _for
+from value_parsing import parse_list_value
 from var_types import *
 
 
@@ -49,7 +50,8 @@ def ex_for(directory):
 
 
 def ex_print(directory):
-    return
+    args = parse_list_value(directory)
+    print(*args)
 
 
 commands_dict = {
