@@ -1,6 +1,7 @@
 from enum import Enum
 
-from complex_operations import _if, _while
+from complex_operations import _if, _while, _for
+from value_parsing import parse_list_value
 from var_types import *
 
 
@@ -42,11 +43,15 @@ def ex_while(directory):
 
 
 def ex_for(directory):
-    return
+    if directory.dirlen() != 2:
+        raise ValueError(
+            f"Directory {directory.path} of type Command.for must have 2 subdirectories , given {directory.dirlen()}")
+    _for(directory.navigate_to_nth_child(1))
 
 
 def ex_print(directory):
-    return
+    args = parse_list_value(directory)
+    print(*args)
 
 
 commands_dict = {

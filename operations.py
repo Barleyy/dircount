@@ -5,6 +5,8 @@ class OperationType(Enum):
     arithmetic = 1
     comparison = 2
     string = 3
+    list = 4
+    dict = 5
 
 
 class ArithmeticOperation(Enum):
@@ -30,8 +32,29 @@ class StringOperation(Enum):
     neq = 3
 
 
+class ListOperation(Enum):
+    get = 1
+    concat = 2
+    append = 3
+    removeAtIndex = 4
+
+
+class DictOperation(Enum):
+    get = 1
+    update = 2
+    delete = 3
+
+
 global operations_dict
 global operation_type
+
+
+def mutable_operation_with_return(operation):
+    def execute(x, y):
+        operation(x, y)
+        return x
+    return execute
+
 
 operations_dict = {
     ArithmeticOperation.add: lambda x, y: x + y,
@@ -47,11 +70,20 @@ operations_dict = {
     ComparisonOperation.eq: lambda x, y: x == y,
     StringOperation.concat: lambda x, y: x + y,
     StringOperation.eq: lambda x, y: x == y,
-    StringOperation.neq: lambda x, y: x != y
+    StringOperation.neq: lambda x, y: x != y,
+    ListOperation.get: lambda x, y: x[y],
+    ListOperation.concat: lambda x, y: x + y,
+    ListOperation.append: mutable_operation_with_return(lambda x, y: x.append(y)),
+    ListOperation.removeAtIndex: mutable_operation_with_return(lambda x, y: x.__delitem__(y)),
+    DictOperation.get: lambda x, y: x[y],
+    DictOperation.update: mutable_operation_with_return(lambda x, y: x.update(y)),
+    DictOperation.delete: mutable_operation_with_return(lambda x, y: x.__delitem__(y)),
 }
 
 operation_type = {
     OperationType.arithmetic: ArithmeticOperation,
     OperationType.comparison: ComparisonOperation,
-    OperationType.string: StringOperation
+    OperationType.string: StringOperation,
+    OperationType.list: ListOperation,
+    OperationType.dict: DictOperation,
 }

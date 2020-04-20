@@ -8,7 +8,3 @@ else:
     sys.exit("no command line arguments")
 
 settings.init(dirs)
-
-
-
-
