@@ -40,7 +40,7 @@ class Directory:
         return self.navigate_to_nth_child(0).dirlen()
 
     def get_link_path(self):
-        link = self.change_user_link(os.readlink(self.path))
+        link = os.readlink(self.path)
         return link[:-1] if link[-1] == "/" else link
 
     def is_link(self):
