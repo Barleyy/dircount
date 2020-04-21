@@ -1,12 +1,14 @@
-import os
+import os, pwd
+import re
+import settings 
 
 
 class Directory:
     path_separator = '/'
-
+    user = pwd.getpwuid(os.getuid()).pw_name
     def __init__(self, path, parent_path=None):
         self.parent_path = parent_path
-        self.path = path
+        self.path = os.path.abspath(path)
         children = os.listdir(path)
         children = list(filter(lambda x: os.path.isdir(self.get_child_path(x)), children))
         children.sort(key=lambda x: (len(x), x))
@@ -38,7 +40,8 @@ class Directory:
         return self.navigate_to_nth_child(0).dirlen()
 
     def get_link_path(self):
-        return os.readlink(self.path)[:-1]
+        link = self.change_user_link(os.readlink(self.path))
+        return link[:-1] if link[-1] == "/" else link
 
     def is_link(self):
         return os.path.islink(self.path)

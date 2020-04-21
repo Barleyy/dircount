@@ -50,7 +50,7 @@ def ex_for(directory):
 
 
 def ex_print(directory):
-    args = parse_list_value(directory)
+    args = parse_list_value([directory.navigate_to_nth_child(1)])
     print(*args)
 
 
