@@ -1,4 +1,5 @@
 import commands
+import error_factory
 import settings
 from directory_functions import Directory
 from var_types import parse_value, Types, declare, let
@@ -6,7 +7,7 @@ from var_types import parse_value, Types, declare, let
 
 def _if(directory):
     if not 3 >= directory.dirlen() >= 2:
-        raise ValueError(f"Expected 2-3 dirs at {directory.path} for if command, given {directory.dirlen()}")
+        error_factory.ErrorFactory.invalid_command_dir_number([2,3], directory.path, directory.dirlen(), "IF")
     if parse_value(directory.navigate_to_nth_child(0), Types.boolean, 1):
         print("IF true execution")
         root = Directory(directory.navigate_to_nth_child(1).path)
@@ -24,7 +25,7 @@ def _if(directory):
 
 def _while(directory):
     if directory.dirlen() != 2:  # logical condition, list of commands
-        raise ValueError(f"Expected 2 dirs at {directory.path} for while command, given {directory.dirlen()}")
+        error_factory.ErrorFactory.invalid_command_dir_number([2], directory.path, directory.dirlen(), "WHILE")
 
     condition_dir = directory.navigate_to_nth_child(0)
     counter = 1
@@ -40,7 +41,7 @@ def _for(directory):
     # var_declare, boolean_expression,  list of commands
     # var_declare, boolean_expression, let_expression, list of commands
     if directory.dirlen() not in for_arguments_dict.keys():
-        raise ValueError(f"Expected 1, 3 or 4 dirs for FOR command at {directory.path}, given {directory.dirlen()}")
+        error_factory.ErrorFactory.invalid_command_dir_number([1,3,4], directory.path, directory.dirlen(), "FOR")
     for_arguments_dict[directory.dirlen()](directory)
 
 
