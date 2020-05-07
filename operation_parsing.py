@@ -8,9 +8,11 @@ def parse_operation_argument(operation_arg_dir):
     is_link_val = operation_arg_dir.is_link()
 
     if is_link_val:  # is link
-        arg_val = settings.variables[operation_arg_dir.get_link_path()][1]
+        invoked_function = settings.get_currently_invoked_function()
+        arg_val = invoked_function.variable_stack[operation_arg_dir.get_link_path()][1]
 
     elif operation_arg_dir.dirlen() != 3:  # not link and not operation -> simple type
+        print(operation_arg_dir.dirlen())
         _type = value_parsing.len_types[operation_arg_dir.dirlen()]
         arg_val = value_parsing.parse_generic_value(operation_arg_dir, _type, value_parsing.types_len[_type])
 

@@ -3,11 +3,13 @@ from enum import Enum
 
 import error_factory
 from directory_functions import Directory
-from operation_parsing import operation_parsing, parse_operation_argument
+from function_adapter import Function
+from operation_parsing import parse_operation_argument, operation_parsing
 from operations import ArithmeticOperation, ComparisonOperation, StringOperation
 
 
 class Types(Enum):
+    function = 0
     int = 1
     float = 2
     char = 3
@@ -93,6 +95,7 @@ def parse_list_value(parsing_list_data):
 
     list_array = []
     for val in vals_dir.navigate_to_nth_child(0).get_directory_children():
+        print(val.path)
         list_array.append(parse_operation_argument(val))
     return list_array
 
@@ -109,6 +112,29 @@ def parse_dict_value(parsing_dict_data):
     return _dict
 
 
+def define_function(parsing_func_data):
+    commands_root = parsing_func_data[0].navigate_to_nth_child(0).path
+    fun_name = parse_and_validate_only_value(parsing_func_data[0].parent_path.navigate_to_nth_child(2), str)
+    args_no = parse_and_validate_only_value(parsing_func_data[0].navigate_to_nth_child(1), int)
+    if parsing_func_data[0].navigate_to_nth_child(2).dirlen() != 0:
+        return_val_id = parse_and_validate_only_value(parsing_func_data[0].navigate_to_nth_child(2), str)
+    else:
+        return_val_id = None
+    if args_no < 0:
+        error_factory.ErrorFactory.invalid_function_args_no(args_no)
+
+    print("FUNCTION DEFINED TO", commands_root, fun_name, args_no)
+    return Function(commands_root, fun_name, args_no, return_val_id)
+
+
+def parse_and_validate_only_value(data_dir, type):
+    value = parse_operation_argument(data_dir)
+    if value.__class__ is not type:
+        error_factory.ErrorFactory.type_mismatch_error(type, value.__class__)
+    print(f"VAR TYPE {type} = {value}")
+    return value
+
+
 parsing_dict = {
     Types.int: parse_integer_value,
     Types.float: parse_float_value,
@@ -116,15 +142,15 @@ parsing_dict = {
     Types.string: parse_string_value,
     Types.boolean: parse_boolean_value,
     Types.list: parse_list_value,
-    Types.dict: parse_dict_value
+    Types.dict: parse_dict_value,
+    Types.function: define_function
 }
-
 
 types_operations_dict = {ArithmeticOperation: [Types.int, Types.float],
                          ComparisonOperation: [Types.int, Types.float, Types.string, Types.char, Types.boolean],
                          StringOperation: [Types.string, Types.char]}
 
-# NONE TYPE CAN HAS LENGTH 3!!!
+# NONE TYPE CAN HAS LENGTH 3 or 6 (operation / function)!!!
 types_len = {
     Types.int: 16,
     Types.float: 32,
@@ -132,7 +158,8 @@ types_len = {
     Types.string: 2,
     Types.list: 4,
     Types.dict: 5,
-    Types.boolean: 1
+    Types.boolean: 1,
+    Types.function: 6
 }
 
 len_types = {
@@ -142,5 +169,6 @@ len_types = {
     1: Types.boolean,
     4: Types.list,
     5: Types.dict,
-    2: Types.string
+    2: Types.string,
+    6: Types.function
 }

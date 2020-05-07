@@ -1,12 +1,12 @@
 from enum import Enum
 
-from complex_operations import _if, _while, _for
+from complex_operations import _if, _while, _for, _function
 from value_parsing import parse_list_value
 from var_types import *
-import error_factory
 
 
 class Commands(Enum):
+    function = 0
     declare = 1
     let = 2
     _if = 3
@@ -46,8 +46,15 @@ def ex_for(directory):
 
 
 def ex_print(directory):
-    args = parse_list_value(directory)
+    args = parse_list_value([directory.navigate_to_nth_child(1)])
     print(*args)
+
+
+def ex_function(directory):
+    print("TO DO EXEC")
+    if directory.dirlen() != 2:
+        error_factory.ErrorFactory.dir_length_error("EXEC FUN", directory.path, directory.dirlen())
+    _function(directory.navigate_to_nth_child(1))
 
 
 commands_dict = {
@@ -56,7 +63,8 @@ commands_dict = {
     Commands._if: ex_if,
     Commands._while: ex_while,
     Commands._for: ex_for,
-    Commands.print: ex_print
+    Commands.print: ex_print,
+    Commands.function: ex_function
 }
 
 

@@ -1,5 +1,6 @@
 import error_factory
 import settings
+from function_adapter import Function
 from value_parsing import parse_value, types_len, parse_string_value, Types
 from operation_parsing import parse_operation_argument
 
@@ -22,7 +23,8 @@ def let(directory):
     var_directory = directory.navigate_to_nth_child(1)
     print(f"VAR TYPES LET {directory.path}")
     var_link = directory.navigate_to_nth_child(0).get_link_path()
-    var_type = settings.variables[var_link][2]
+    invoked_function = settings.get_currently_invoked_function()
+    var_type = invoked_function.variable_stack[var_link][2]
     new_value = parse_value(var_directory, var_type, types_len[var_type])
     update_var_value(var_link, new_value)
 
@@ -46,19 +48,21 @@ def get_var_path_by_varname(variables, name):
 
 
 def attach_variable(path, name, value, clazz):
-    if path in settings.variables or name in get_var_names_from_vars_dict(settings.variables):
+    invoked_function = settings.get_currently_invoked_function()
+    if path in invoked_function.variable_stack or name in get_var_names_from_vars_dict(invoked_function.variable_stack):
         error_factory.ErrorFactory.var_already_defined_error(name)
     else:
-        settings.variables[path] = (name, value, clazz)
+        invoked_function.variable_stack[path] = (name, value, clazz)
 
 
 def update_var_value(path, value):
-    if path not in settings.variables:
+    invoked_function = settings.get_currently_invoked_function()
+    if path not in invoked_function.variable_stack:
         error_factory.ErrorFactory.var_not_defined_error(path)
     else:
-        var_properties = list(settings.variables[path])
+        var_properties = list(invoked_function.variable_stack[path])
         var_properties[1] = value
-        settings.variables[path] = tuple(var_properties)
+        invoked_function.variable_stack[path] = tuple(var_properties)
 
 
 types_dict = {
@@ -68,7 +72,8 @@ types_dict = {
     Types.string: str,
     Types.boolean: bool,
     Types.list: list,
-    Types.dict: dict
+    Types.dict: dict,
+    Types.function: Function
 }
 
 

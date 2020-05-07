@@ -64,6 +64,11 @@ class ErrorFactory:
         template_message = f"Variable {name} already defined"
         raise ParsingError(template_message) from None
 
+    @staticmethod
+    def invalid_function_args_no(args_no):
+        template_message = f"Function must have at least 0 args, given {args_no}"
+        raise ParsingError(template_message) from None
+
 
 class ParsingError(ValueError):
     def __init__(self, message):

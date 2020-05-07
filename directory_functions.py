@@ -42,9 +42,7 @@ class Directory:
         return self.navigate_to_nth_child(0).dirlen()
 
     def get_link_path(self):
-        print(os.readlink(self.path))
-        print(os.readlink(self.path)[:-1])
-        return os.readlink(self.path)[:-1]
+        return (os.readlink(self.path), os.readlink(self.path)[:-1])[os.readlink(self.path).endswith('/')]
 
     def is_link(self):
         return os.path.islink(self.path)
