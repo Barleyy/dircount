@@ -3,6 +3,7 @@ from enum import Enum
 from complex_operations import _if, _while, _for
 from value_parsing import parse_list_value
 from var_types import *
+import error_factory
 
 
 class Commands(Enum):
@@ -16,36 +17,31 @@ class Commands(Enum):
 
 def ex_declare(directory):
     if directory.dirlen() != 2:
-        raise ValueError(
-            f"Directory {directory.path} of type Command.declare must have 2 subdirectories, given {directory.dirlen()}")
+        error_factory.ErrorFactory.dir_length_error("DECLARE", directory.path, directory.dirlen())
     declare(directory.navigate_to_nth_child(1))
 
 
 def ex_let(directory):
     if directory.dirlen() != 2:
-        raise ValueError(
-            f"Directory {directory.path} of type Command.let must have 2 subdirectories , given{directory.dirlen()}")
+        error_factory.ErrorFactory.dir_length_error("LET", directory.path, directory.dirlen())
     let(directory.navigate_to_nth_child(1))
 
 
 def ex_if(directory):
     if directory.dirlen() != 2:
-        raise ValueError(
-            f"Directory {directory.path} of type Command.if must have 2 subdirectories , given {directory.dirlen()}")
+        error_factory.ErrorFactory.dir_length_error("IF", directory.path, directory.dirlen())
     _if(directory.navigate_to_nth_child(1))
 
 
 def ex_while(directory):
     if directory.dirlen() != 2:
-        raise ValueError(
-            f"Directory {directory.path} of type Command.while must have 2 subdirectories , given {directory.dirlen()}")
+        error_factory.ErrorFactory.dir_length_error("WHILE", directory.path, directory.dirlen())
     _while(directory.navigate_to_nth_child(1))
 
 
 def ex_for(directory):
     if directory.dirlen() != 2:
-        raise ValueError(
-            f"Directory {directory.path} of type Command.for must have 2 subdirectories , given {directory.dirlen()}")
+        error_factory.ErrorFactory.dir_length_error("FOR", directory.path, directory.dirlen())
     _for(directory.navigate_to_nth_child(1))
 
 
