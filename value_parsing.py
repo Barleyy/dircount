@@ -95,7 +95,6 @@ def parse_list_value(parsing_list_data):
 
     list_array = []
     for val in vals_dir.navigate_to_nth_child(0).get_directory_children():
-        print(val.path)
         list_array.append(parse_operation_argument(val))
     return list_array
 

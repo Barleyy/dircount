@@ -56,7 +56,7 @@ class ErrorFactory:
 
     @staticmethod
     def var_not_defined_error(path):
-        template_message = f"Variable at path {path} not defined"
+        template_message = f"Variable {path} not defined"
         raise ParsingError(template_message) from None
 
     @staticmethod

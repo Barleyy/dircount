@@ -98,15 +98,14 @@ def _function(directory):
     else:
         var_link = directory.navigate_to_nth_child(0).get_link_path()
         invoked_function = settings.get_currently_invoked_function()
-        fun_instance = invoked_function.variable_stack[var_link][1]
+        fun_instance = invoked_function.variable_stack.get_var_by_path(var_link).value
         Function.function_stack.append(fun_instance)
         fun_instance.perform_function_code()
         print(fun_instance.variable_stack)
         Function.function_stack.pop()
         print(directory.navigate_to_nth_child(1).path)
         args_list = parse_list_value([directory.navigate_to_nth_child(1)])
-        # TODO: change way of storing vars as key is var_name and reference to var is by name instead if link
-
+        # TODO: handle args to stack such that non-refenced one are temporarily put in var stack as defined one (maybe change path of linking vars to general one and put referenced one as already defined (copy from MAIN func stack
 
 for_arguments_dict = {
     1: _infinite_for,
