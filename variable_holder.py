@@ -59,3 +59,6 @@ class VariableStack:
 
     def create_var(self, var_id, var_value):
         self.var_stack[var_id] = var_value
+
+    def clear(self):
+        self.var_stack.clear()

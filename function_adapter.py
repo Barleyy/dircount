@@ -29,5 +29,11 @@ class Function:
     def find_var_by_path(self, var_pointer):
         return self.variable_stack.get_var_by_path(var_pointer)
 
+    def clear_var_stack(self):
+        self.variable_stack.clear()
+
     def __str__(self):
         return ",".join([str(s) for s in [self.root.path, self.name, self.return_val_id]])
+
+    def __eq__(self, other):
+        isinstance(other, Function.__class__) and self.root == other.root

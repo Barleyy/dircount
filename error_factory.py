@@ -69,6 +69,11 @@ class ErrorFactory:
         template_message = f"Function must have at least 0 args, given {args_no}"
         raise ParsingError(template_message) from None
 
+    @staticmethod
+    def restricted_variable_name_prefix(path, name):
+        template_message = f"Variable at path {path} cannot has '/' at first place, given {name}"
+        raise ParsingError(template_message) from None
+
 
 class ParsingError(ValueError):
     def __init__(self, message):

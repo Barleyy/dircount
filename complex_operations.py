@@ -101,11 +101,14 @@ def _function(directory):
         fun_instance = invoked_function.variable_stack.get_var_by_path(var_link).value
         Function.function_stack.append(fun_instance)
         fun_instance.perform_function_code()
+        # TODO: consider moving clearing to context manager object
+        fun_instance.clear_var_stack()
         print(fun_instance.variable_stack)
         Function.function_stack.pop()
         print(directory.navigate_to_nth_child(1).path)
         args_list = parse_list_value([directory.navigate_to_nth_child(1)])
         # TODO: handle args to stack such that non-refenced one are temporarily put in var stack as defined one (maybe change path of linking vars to general one and put referenced one as already defined (copy from MAIN func stack
+        # TODO: change to use function instance copy instead of original one (for recursion purposes as invoked one in function would have same stack as invoker
 
 for_arguments_dict = {
     1: _infinite_for,

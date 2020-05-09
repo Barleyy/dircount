@@ -46,7 +46,7 @@ class Directory:
 
     def is_var_linked(self):
         # done for handling both path reference and name reference
-        # print(any(os.path.islink(path) for path in self.get_children_paths()))
+        # TODO: in var_types create parser for reference type if dirlen = 1 -> pointer if dirlen = 3 -> by name (one folder must be link to anything eq. parent folder and 2 other typical string
         return any(os.path.islink(path) for path in
                    self.get_children_paths()) and \
                self.dirlen() in [1, 3]  # is link or string name of var

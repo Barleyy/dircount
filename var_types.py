@@ -36,6 +36,8 @@ def parse_and_validate(data_dir, name_directory, type):
     if value.__class__ is not type:
         error_factory.ErrorFactory.type_mismatch_error(type, value.__class__)
     var_name = parse_string_value([name_directory])
+    if var_name.startswith('/'):
+        error_factory.ErrorFactory.restricted_variable_name_prefix(data_dir, var_name)
     print(f"VAR TYPE {type} {var_name} = {value}")
     return var_name, value
 
