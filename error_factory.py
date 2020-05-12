@@ -56,12 +56,22 @@ class ErrorFactory:
 
     @staticmethod
     def var_not_defined_error(path):
-        template_message = f"Variable at path {path} not defined"
+        template_message = f"Variable {path} not defined"
         raise ParsingError(template_message) from None
 
     @staticmethod
     def var_already_defined_error(name):
         template_message = f"Variable {name} already defined"
+        raise ParsingError(template_message) from None
+
+    @staticmethod
+    def invalid_function_args_no(args_no):
+        template_message = f"Function must have at least 0 args, given {args_no}"
+        raise ParsingError(template_message) from None
+
+    @staticmethod
+    def restricted_variable_name_prefix(path, name):
+        template_message = f"Variable at path {path} cannot has '/' at first place, given {name}"
         raise ParsingError(template_message) from None
 
 

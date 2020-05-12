@@ -38,21 +38,23 @@ class Directory:
         return len(self.children_paths)
 
     def get_dir_type(self):
-        print("DIR FUNC ",self.navigate_to_nth_child(0).path)
+        print("DIR FUNC ", self.navigate_to_nth_child(0).path)
         return self.navigate_to_nth_child(0).dirlen()
 
     def get_link_path(self):
-        print(os.readlink(self.path))
-        print(os.readlink(self.path)[:-1])
-        return os.readlink(self.path)[:-1]
+        return (os.readlink(self.path), os.readlink(self.path)[:-1])[os.readlink(self.path).endswith('/')]
 
-    def is_link(self):
-        return os.path.islink(self.path)
+    def is_var_linked(self):
+        # done for handling both path reference and name reference
+        # TODO: in var_types create parser for reference type if dirlen = 1 -> pointer if dirlen = 3 -> by name (one folder must be link to anything eq. parent folder and 2 other typical string
+        return any(os.path.islink(path) for path in
+                   self.get_children_paths()) and \
+               self.dirlen() in [1, 3]  # is link or string name of var
 
     @staticmethod
     def directory_to_bit(directory_path):
         n_subdirs = Directory(directory_path).dirlen()
         if n_subdirs > 1:
-            error_factory.ErrorFactory.bit_directory_error(directory_path,n_subdirs)
+            error_factory.ErrorFactory.bit_directory_error(directory_path, n_subdirs)
         else:
             return n_subdirs
