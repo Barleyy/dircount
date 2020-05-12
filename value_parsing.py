@@ -1,6 +1,7 @@
 import math
 from enum import Enum
 
+import error_factory
 from directory_functions import Directory
 from operation_parsing import operation_parsing, parse_operation_argument
 from operations import ArithmeticOperation, ComparisonOperation, StringOperation
@@ -22,7 +23,7 @@ def parse_generic_value(data_dir, type_class, basic_type_length):
     if data_dir.dirlen() == basic_type_length:
         return parsing_function([data_dir, True])
     else:
-        raise ValueError(f"Could not parse value at {data_dir.path}")
+        error_factory.ErrorFactory.unparsable_expression(data_dir.path)
 
 
 def parse_value(data_dir, type_class, basic_type_length):
@@ -37,8 +38,8 @@ def parse_value(data_dir, type_class, basic_type_length):
         return operation_parsing(data_dir)
 
     else:
-        raise ValueError(
-            types_errors_dict[type_class].format(data_dir.parent_path.path, basic_type_length, data_dir.path))
+        error_factory.ErrorFactory.unparsable_value(data_dir.parent_path.path, basic_type_length, data_dir.path,
+                                                    type_class)
 
 
 def parse_integer_value(parsing_int_data):
@@ -77,9 +78,7 @@ def parse_string_value(parsing_string_data):
     string_array = []
     for char_dir in chars_dir.navigate_to_nth_child(0).get_directory_children():
         if char_dir.dirlen() != 8:
-            raise ValueError(
-                f"First subdirectory of directory {char_dir.path} of type 'declare char' must have 8 subdirectories "
-                f"ASCII (0-127) but has {char_dir.dirlen()}")
+            error_factory.ErrorFactory.unparsable_value(char_dir.parent_path.path, 8, char_dir.path, Types.char)
         string_array.append(chr(parse_integer_value([char_dir, False])))
     return "".join(string_array)
 
@@ -104,9 +103,9 @@ def parse_dict_value(parsing_dict_data):
     _dict = {}
     for pair in vals_dir.navigate_to_nth_child(0).get_directory_children():
         if pair.dirlen() != 2:
-            raise ValueError(
-                f"Invalid number of dirs {pair.path} Each entry in dictionary must have 2 dirs, {pair.dirlen()} given")
-        _dict[parse_operation_argument(pair.navigate_to_nth_child(0))] = parse_operation_argument(pair.navigate_to_nth_child(1))
+            error_factory.ErrorFactory.directory_parsing_error(pair.path, pair.dirlen())
+        _dict[parse_operation_argument(pair.navigate_to_nth_child(0))] = parse_operation_argument(
+            pair.navigate_to_nth_child(1))
     return _dict
 
 
@@ -120,18 +119,6 @@ parsing_dict = {
     Types.dict: parse_dict_value
 }
 
-types_errors_dict = {
-    Types.int: "Either first subdirectory of directory {0} of type 'declare int' must have {1} subdirectories or "
-               "operation returning int value at level {2} expected",
-    Types.float: "Either first subdirectory of directory {0} of type 'declare float' must have {1} subdirectories or "
-                 "operation returning float value at level {2} expected",
-    Types.char: "Either first subdirectory of directory {0} of type 'declare char' must have 8 subdirectories or "
-                "operation returning char value at level {2} expected",
-    Types.string: "Either data subdir of directory {0} of type 'declare string' must have 8 subdirectories or "
-                  "operation returning string value at level {2} expected",
-    Types.boolean: "Either first subdirectory of directory {0} of type 'declare boolean' must have 0-1 subdirectories "
-                   "or operation returning boolean value at level {2} expected"
-}
 
 types_operations_dict = {ArithmeticOperation: [Types.int, Types.float],
                          ComparisonOperation: [Types.int, Types.float, Types.string, Types.char, Types.boolean],

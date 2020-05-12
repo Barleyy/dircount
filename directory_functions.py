@@ -1,5 +1,7 @@
 import os
 
+import error_factory
+
 
 class Directory:
     path_separator = '/'
@@ -8,6 +10,7 @@ class Directory:
         self.parent_path = parent_path
         self.path = path
         children = os.listdir(path)
+
         children = list(filter(lambda x: os.path.isdir(self.get_child_path(x)), children))
         children.sort(key=lambda x: (len(x), x))
         self.children_paths = [self.get_child_path(child) for child in children]
@@ -19,7 +22,8 @@ class Directory:
         return self.children_paths[n]
 
     def get_child_path(self, child_name):
-        return self.path + self.path_separator + child_name
+        return os.path.abspath(self.path + self.path_separator + child_name)
+        # return self.path + self.path_separator + child_name
 
     def navigate_to_nth_child(self, n):
         return Directory(self.get_nth_child_path(n), parent_path=self)
@@ -38,6 +42,8 @@ class Directory:
         return self.navigate_to_nth_child(0).dirlen()
 
     def get_link_path(self):
+        print(os.readlink(self.path))
+        print(os.readlink(self.path)[:-1])
         return os.readlink(self.path)[:-1]
 
     def is_link(self):
@@ -47,8 +53,6 @@ class Directory:
     def directory_to_bit(directory_path):
         n_subdirs = Directory(directory_path).dirlen()
         if n_subdirs > 1:
-            raise ValueError(
-                "Directories inside bits declaration can only have either 0 or 1 subdirectories but {0} has {1}".format(
-                    directory_path, n_subdirs))
+            error_factory.ErrorFactory.bit_directory_error(directory_path,n_subdirs)
         else:
             return n_subdirs
