@@ -75,13 +75,18 @@ class ErrorFactory:
         raise ParsingError(template_message) from None
 
     @staticmethod
-    def invalid_argument_name(name):
-        template_message = f"Function argument token must be str class, given {name} with class: {name.__class__}"
+    def invalid_argument_name():
+        template_message = f"Function argument token must be str class"
         raise ParsingError(template_message) from None
 
     @staticmethod
     def invalid_arg_no_passed(given, expected, name):
         template_message = f"Function {name} expects {expected} number of args, given {given}"
+        raise ParsingError(template_message) from None
+
+    @staticmethod
+    def duplicate_arg_name(name):
+        template_message = f"Function args names must be distinct, {name} invalidates"
         raise ParsingError(template_message) from None
 
 

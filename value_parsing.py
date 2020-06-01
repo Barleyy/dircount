@@ -119,7 +119,9 @@ def define_function(parsing_func_data):
     args_list = parse_list_value([parsing_func_data[0].navigate_to_nth_child(1)])
 
     if any(arg.__class__ is not str for arg in args_list):
-        error_factory.ErrorFactory.invalid_function_args_no("ELO")
+        error_factory.ErrorFactory.invalid_argument_name()
+    elif len(set(args_list)) != len(args_list):
+        error_factory.ErrorFactory.duplicate_arg_name(fun_name)
     if parsing_func_data[0].navigate_to_nth_child(2).dirlen() != 0:
         return_val_id = parse_and_validate_only_value(parsing_func_data[0].navigate_to_nth_child(2), str)
     else:
