@@ -1,6 +1,3 @@
-import translator
-
-
 class VariableId:
     def __init__(self, pointer, name):
         self.name = name
@@ -30,15 +27,14 @@ class VariableStack:
     def __init__(self):
         self.var_stack = {}
 
-    # TODO: generify variable retrieve onto one method kind of switch case, if varname starts with '/' we assume
-    #  it is link otherwise retrieve by name and use only generified one among project privating 2 other ones
     def get_var_by_name(self, name):
         for var in self.var_stack.keys():
             if var.name == name:
                 return self.var_stack.get(var)
         else:
             print("WARNING", f"NOT FOUND {name} in function local stack")
-            return translator.get_global_var_by_name(name)
+            import function_utils
+            return function_utils.get_global_var_by_name(name)
 
     def get_var_by_path(self, var_pointer):
         for key in self.var_stack.keys():
@@ -46,7 +42,8 @@ class VariableStack:
                 return self.var_stack.get(key)
         else:
             print("WARNING", f"NOT FOUND {var_pointer} in function local stack")
-            return translator.get_global_var_by_path(var_pointer)
+            import function_utils
+            return function_utils.get_global_var_by_path(var_pointer)
 
     def check_if_var_exists_by_name(self, var_name):
         for key in self.var_stack.keys():

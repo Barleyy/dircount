@@ -2,7 +2,6 @@ import copy
 
 import commands
 import error_factory
-import translator
 from directory_functions import Directory
 from function_adapter import Function
 from value_parsing import parse_list_value, match_type
@@ -89,7 +88,8 @@ def execute_all_loop_commands(root):
 
 
 def remove_var_from_scope(path):
-    invoked_function = translator.get_currently_invoked_function()
+    import function_utils
+    invoked_function = function_utils.get_currently_invoked_function()
     del invoked_function.variable_stack[path]
 
 
