@@ -6,14 +6,17 @@ import error_factory
 class Directory:
     path_separator = '/'
 
-    def __init__(self, path, parent_path=None):
+    def __init__(self, path=None, parent_path=None, children=None):
         self.parent_path = parent_path
         self.path = path
-        children = os.listdir(path)
+        if children is None:
+            children = os.listdir(path)
 
-        children = list(filter(lambda x: os.path.isdir(self.get_child_path(x)), children))
-        children.sort(key=lambda x: (len(x), x))
-        self.children_paths = [self.get_child_path(child) for child in children]
+            children = list(filter(lambda x: os.path.isdir(self.get_child_path(x)), children))
+            children.sort(key=lambda x: (len(x), x))
+            self.children_paths = [self.get_child_path(child) for child in children]
+        else:
+            self.children_paths = [it_dir.path for it_dir in children]
 
     def get_path(self):
         return self.path
@@ -46,7 +49,6 @@ class Directory:
 
     def is_var_linked(self):
         # done for handling both path reference and name reference
-        # TODO: in var_types create parser for reference type if dirlen = 1 -> pointer if dirlen = 3 -> by name (one folder must be link to anything eq. parent folder and 2 other typical string
         return any(os.path.islink(path) for path in
                    self.get_children_paths()) and \
                self.dirlen() in [1, 3]  # is link or string name of var

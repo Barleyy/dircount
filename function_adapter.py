@@ -6,8 +6,8 @@ from variable_holder import VariableStack
 class Function:
     function_stack = []
 
-    # 1 folder - list of commands, 2 folder - name, 3 folder - args no (if empty 0 arg fun),
-    # 4 folder return value name (if empty void func)
+    # 1 folder - list of commands, 2 folder - args no (if empty 0 arg fun),
+    # 3 folder return value name (if empty void func)
     def __init__(self, pointer, name, args_no, return_val_id):
         self.variable_stack = VariableStack()
         self.root = Directory(pointer)
@@ -18,7 +18,7 @@ class Function:
     def perform_function_code(self):
         print("PERFORMING FUNCTION", self.name)
         for directory in self.root.get_directory_children():
-            print(self.name, directory.path)
+            print("FUN COMMAND AT", self.name, directory.path)
             commands.expression(directory)
         if self.return_val_id is not None:
             return self.find_var_by_name(self.return_val_id)[1]
@@ -31,6 +31,15 @@ class Function:
 
     def clear_var_stack(self):
         self.variable_stack.clear()
+
+    def get_var(self, param):
+        if param.startswith('/'):
+            return self.find_var_by_path(param)
+        else:
+            return self.find_var_by_name(param)
+
+    def get_arguments_len(self):
+        return len(self.args_no)
 
     def __str__(self):
         return ",".join([str(s) for s in [self.root.path, self.name, self.return_val_id]])

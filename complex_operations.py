@@ -1,10 +1,13 @@
+import copy
+
 import commands
 import error_factory
-import settings
+import translator
 from directory_functions import Directory
 from function_adapter import Function
-from value_parsing import parse_list_value
+from value_parsing import parse_list_value, match_type
 from var_types import parse_value, Types, declare, let
+from variable_holder import VariableStack, VariableId, VariableHolder
 
 
 def _if(directory):
@@ -86,7 +89,7 @@ def execute_all_loop_commands(root):
 
 
 def remove_var_from_scope(path):
-    invoked_function = settings.get_currently_invoked_function()
+    invoked_function = translator.get_currently_invoked_function()
     del invoked_function.variable_stack[path]
 
 
@@ -96,19 +99,32 @@ def _function(directory):
         error_factory.ErrorFactory.invalid_command_dir_number([2], directory.path, directory.dirlen(), "EXEC FUNC")
 
     else:
+        print(directory.children_paths)
         var_link = directory.navigate_to_nth_child(0).get_link_path()
-        invoked_function = settings.get_currently_invoked_function()
-        fun_instance = invoked_function.variable_stack.get_var_by_path(var_link).value
-        Function.function_stack.append(fun_instance)
-        fun_instance.perform_function_code()
-        # TODO: consider moving clearing to context manager object
-        fun_instance.clear_var_stack()
-        print(fun_instance.variable_stack)
-        Function.function_stack.pop()
+        print(var_link)
+        import function_utils
+        invoked_function = function_utils.get_currently_invoked_function()
+        fun_instance_template = invoked_function.variable_stack.get_var_by_path(var_link).value
+        fun_instance = copy.deepcopy(fun_instance_template)
+
         print(directory.navigate_to_nth_child(1).path)
         args_list = parse_list_value([directory.navigate_to_nth_child(1)])
-        # TODO: handle args to stack such that non-refenced one are temporarily put in var stack as defined one (maybe change path of linking vars to general one and put referenced one as already defined (copy from MAIN func stack
-        # TODO: change to use function instance copy instead of original one (for recursion purposes as invoked one in function would have same stack as invoker
+        print("FUNCTION ARGS_LIST", args_list)
+        if len(args_list) != fun_instance.get_arguments_len():
+            error_factory.ErrorFactory.invalid_arg_no_passed(len(args_list), fun_instance.get_arguments_len(),
+                                                             fun_instance.name)
+        else:
+            var_stack = VariableStack()
+            for item in list(zip(fun_instance.args_no, args_list)):
+                var_stack.create_var(VariableId(item[0], str(item[0])), VariableHolder(match_type(item[1]), item[1]))
+            fun_instance.variable_stack = var_stack
+        Function.function_stack.append(fun_instance)
+        print("FUNC BEFORE EXEC STACK", fun_instance.variable_stack)
+        fun_instance.perform_function_code()
+        fun_instance.clear_var_stack()
+        print("FUNC AFTER EXEC STACK", fun_instance.variable_stack)
+        Function.function_stack.pop()
+
 
 for_arguments_dict = {
     1: _infinite_for,

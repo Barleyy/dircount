@@ -74,6 +74,16 @@ class ErrorFactory:
         template_message = f"Variable at path {path} cannot has '/' at first place, given {name}"
         raise ParsingError(template_message) from None
 
+    @staticmethod
+    def invalid_argument_name(name):
+        template_message = f"Function argument token must be str class, given {name} with class: {name.__class__}"
+        raise ParsingError(template_message) from None
+
+    @staticmethod
+    def invalid_arg_no_passed(given, expected, name):
+        template_message = f"Function {name} expects {expected} number of args, given {given}"
+        raise ParsingError(template_message) from None
+
 
 class ParsingError(ValueError):
     def __init__(self, message):

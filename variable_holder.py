@@ -1,4 +1,4 @@
-import error_factory
+import translator
 
 
 class VariableId:
@@ -13,6 +13,9 @@ class VariableId:
     def __hash__(self):
         return hash((self.pointer, self.name))
 
+    def __str__(self):
+        return str(self.name) + ", " + str(self.pointer)
+
 
 class VariableHolder:
     def __init__(self, _type, value):
@@ -20,7 +23,7 @@ class VariableHolder:
         self.value = value
 
     def __str__(self):
-        return ','.join([str(s) for s in [self.value, self.type]])
+        return ', '.join([str(s) for s in [self.value, self.type]])
 
 
 class VariableStack:
@@ -34,14 +37,16 @@ class VariableStack:
             if var.name == name:
                 return self.var_stack.get(var)
         else:
-            error_factory.ErrorFactory.var_not_defined_error(name)
+            print("WARNING", f"NOT FOUND {name} in function local stack")
+            return translator.get_global_var_by_name(name)
 
     def get_var_by_path(self, var_pointer):
         for key in self.var_stack.keys():
             if key.pointer == var_pointer:
                 return self.var_stack.get(key)
         else:
-            error_factory.ErrorFactory.var_not_defined_error(var_pointer)
+            print("WARNING", f"NOT FOUND {var_pointer} in function local stack")
+            return translator.get_global_var_by_path(var_pointer)
 
     def check_if_var_exists_by_name(self, var_name):
         for key in self.var_stack.keys():
@@ -62,3 +67,6 @@ class VariableStack:
 
     def clear(self):
         self.var_stack.clear()
+
+    def __str__(self):
+        return ", ".join(" = ".join((str(k), str(v))) for k, v in self.var_stack.items())
