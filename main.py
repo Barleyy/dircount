@@ -7,4 +7,4 @@ if len(sys.argv) > 1:
 else:
     sys.exit("no command line arguments")
 
-settings.init(dirs)
+translator.translate(dirs)

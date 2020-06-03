@@ -3,6 +3,8 @@ from enum import Enum
 from complex_operations import _if, _while, _for, _function
 from value_parsing import parse_list_value
 from var_types import *
+# for proper import chain here unused
+import translator
 
 
 class Commands(Enum):

@@ -1,4 +1,5 @@
 import math
+import os
 from enum import Enum
 
 import error_factory
@@ -113,17 +114,23 @@ def parse_dict_value(parsing_dict_data):
 
 def define_function(parsing_func_data):
     commands_root = parsing_func_data[0].navigate_to_nth_child(0).path
+
     fun_name = parse_and_validate_only_value(parsing_func_data[0].parent_path.navigate_to_nth_child(2), str)
-    args_no = parse_and_validate_only_value(parsing_func_data[0].navigate_to_nth_child(1), int)
+    args_list = parse_list_value([parsing_func_data[0].navigate_to_nth_child(1)])
+
+    if any(arg.__class__ is not str for arg in args_list):
+        error_factory.ErrorFactory.invalid_argument_name()
+    elif len(set(args_list)) != len(args_list):
+        error_factory.ErrorFactory.duplicate_arg_name(fun_name)
     if parsing_func_data[0].navigate_to_nth_child(2).dirlen() != 0:
         return_val_id = parse_and_validate_only_value(parsing_func_data[0].navigate_to_nth_child(2), str)
     else:
         return_val_id = None
-    if args_no < 0:
-        error_factory.ErrorFactory.invalid_function_args_no(args_no)
+    if len(args_list) < 0:
+        error_factory.ErrorFactory.invalid_function_args_no(len(args_list))
 
-    print("FUNCTION DEFINED TO", commands_root, fun_name, args_no)
-    return Function(commands_root, fun_name, args_no, return_val_id)
+    print("FUNCTION DEFINED TO", commands_root, fun_name, args_list)
+    return Function(commands_root, fun_name, args_list, return_val_id)
 
 
 def parse_and_validate_only_value(data_dir, type):
@@ -132,6 +139,23 @@ def parse_and_validate_only_value(data_dir, type):
         error_factory.ErrorFactory.type_mismatch_error(type, value.__class__)
     print(f"VAR TYPE {type} = {value}")
     return value
+
+
+def parse_link(self):
+    if self.dirlen() == 1:
+        print("LINK")
+        return (os.readlink(self.navigate_to_nth_child(0).path), os.readlink(self.navigate_to_nth_child(0).path)[:-1])[
+            os.readlink(self.navigate_to_nth_child(0).path).endswith('/')]
+    elif self.dirlen() == 3:
+        print("NAME")
+        str_dirs = list(filter(lambda it_dir: not os.path.islink(it_dir.path), self.get_directory_children()))
+        return parse_string_value([Directory(children=str_dirs)])
+    else:
+        error_factory.ErrorFactory.command_not_found(self.path, self.dirlen())
+
+
+def match_type(value):
+    return python_types_dict[value.__class__]
 
 
 parsing_dict = {
@@ -148,8 +172,8 @@ parsing_dict = {
 types_operations_dict = {ArithmeticOperation: [Types.int, Types.float],
                          ComparisonOperation: [Types.int, Types.float, Types.string, Types.char, Types.boolean],
                          StringOperation: [Types.string, Types.char]}
-
 # NONE TYPE CAN HAS LENGTH 3 or 6 (operation / function)!!!
+
 types_len = {
     Types.int: 16,
     Types.float: 32,
@@ -170,4 +194,14 @@ len_types = {
     5: Types.dict,
     2: Types.string,
     6: Types.function
+}
+
+python_types_dict = {
+    int: Types.int,
+    float: Types.float,
+    str: Types.string,
+    bool: Types.boolean,
+    list: Types.list,
+    dict: Types.dict,
+    Function: Types.function
 }
