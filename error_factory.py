@@ -1,3 +1,6 @@
+import logging
+
+logger=logging.getLogger("main.error_factory")
 class ErrorFactory:
     @staticmethod
     def declare_parsing_error(message):
@@ -92,4 +95,5 @@ class ErrorFactory:
 
 class ParsingError(ValueError):
     def __init__(self, message):
+        logger.error(message)
         super(ParsingError, self).__init__(message)

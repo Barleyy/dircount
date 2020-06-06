@@ -53,7 +53,7 @@ def ex_print(directory):
 
 
 def ex_function(directory):
-    print("TO DO EXEC")
+    logger.debug("TO DO EXEC")
     if directory.dirlen() != 2:
         error_factory.ErrorFactory.dir_length_error("EXEC FUN", directory.path, directory.dirlen())
     _function(directory.navigate_to_nth_child(1))
