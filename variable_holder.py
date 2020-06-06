@@ -1,3 +1,7 @@
+import logging
+
+logger=logging.getLogger("main.variable_holder")
+
 class VariableId:
     def __init__(self, pointer, name):
         self.name = name
@@ -32,7 +36,7 @@ class VariableStack:
             if var.name == name:
                 return self.var_stack.get(var)
         else:
-            print("WARNING", f"NOT FOUND {name} in function local stack")
+            logger.warning(VariableStack.get_var_by_name.__name__+f" NOT FOUND {name} in function local stack")
             import function_utils
             return function_utils.get_global_var_by_name(name)
 
@@ -41,7 +45,7 @@ class VariableStack:
             if key.pointer == var_pointer:
                 return self.var_stack.get(key)
         else:
-            print("WARNING", f"NOT FOUND {var_pointer} in function local stack")
+            logger.warning(VariableStack.get_var_by_path.__name__+f" NOT FOUND {var_pointer} in function local stack")
             import function_utils
             return function_utils.get_global_var_by_path(var_pointer)
 
