@@ -9,7 +9,8 @@ from function_adapter import Function
 from operation_parsing import parse_operation_argument, operation_parsing
 from operations import ArithmeticOperation, ComparisonOperation, StringOperation
 
-logger = logging.getLogger("main.value_parsing")
+logger = logging.getLogger("value_parsing")
+
 
 class Types(Enum):
     function = 0

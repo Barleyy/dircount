@@ -1,6 +1,7 @@
 import logging
 
-logger=logging.getLogger("main.variable_holder")
+logger=logging.getLogger("variable_holder")
+
 
 class VariableId:
     def __init__(self, pointer, name):

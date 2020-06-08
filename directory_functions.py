@@ -3,7 +3,9 @@ import logging
 
 import error_factory
 
-logger=logging.getLogger("main.directory_functions")
+logger = logging.getLogger("directory_functions")
+
+
 class Directory:
     path_separator = '/'
 
@@ -42,7 +44,7 @@ class Directory:
         return len(self.children_paths)
 
     def get_dir_type(self):
-        logger.debug(Directory.get_dir_type.__name__+ self.navigate_to_nth_child(0).path)
+        logger.debug(Directory.get_dir_type.__name__ + self.navigate_to_nth_child(0).path)
         return self.navigate_to_nth_child(0).dirlen()
 
     def get_link_path(self):

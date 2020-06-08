@@ -9,10 +9,10 @@ if len(sys.argv) == 2:
 elif len(sys.argv) > 2:
     dirs = sys.argv[2]
     if sys.argv[1].lower() == "-d":
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.NOTSET)
     elif sys.argv[1].lower() == "-df":
         dirs = sys.argv[3]
-        logging.basicConfig(filename=sys.argv[2], filemode='w', level=logging.DEBUG)
+        logging.basicConfig(filename=sys.argv[2], filemode='w', level=logging.NOTSET)
     else:
         sys.exit("wrong args")
 else:

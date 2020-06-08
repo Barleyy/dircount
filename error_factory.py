@@ -1,6 +1,8 @@
 import logging
 
-logger=logging.getLogger("main.error_factory")
+logger=logging.getLogger("error_factory")
+
+
 class ErrorFactory:
     @staticmethod
     def declare_parsing_error(message):

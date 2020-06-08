@@ -1,7 +1,9 @@
 import logging
 from function_adapter import Function
 
-logger=logging.getLogger("main.translator")
+logger = logging.getLogger("translator")
+
+
 def translate(pointer):
     function_main = Function(pointer, "MAIN", 0, None)
     Function.function_stack.append(function_main)

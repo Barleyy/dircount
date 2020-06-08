@@ -3,7 +3,9 @@ from directory_functions import Directory
 from variable_holder import VariableStack
 import logging
 
-logger=logging.getLogger("main.function_adapter")
+logger = logging.getLogger("function_adapter")
+
+
 class Function:
     function_stack = []
 
@@ -17,12 +19,13 @@ class Function:
         self.return_val_id = return_val_id
 
     def perform_function_code(self):
-        logger.info(Function.perform_function_code.__name__+" PERFORMING FUNCTION: "+ self.name)
+        logger.info(Function.perform_function_code.__name__ + " PERFORMING FUNCTION: " + self.name)
         for directory in self.root.get_directory_children():
-            logger.debug(Function.perform_function_code.__name__+" FUN COMMAND AT "+ self.name+ directory.path)
+            logger.debug(
+                Function.perform_function_code.__name__ + " FUN COMMAND AT " + self.name + directory.path)
             commands.expression(directory)
-        if self.return_val_id is not None:
-            return self.find_var_by_name(self.return_val_id)[1]
+            if self.return_val_id is not None:
+                return self.find_var_by_name(self.return_val_id)[1]
 
     def find_var_by_name(self, var_name):
         return self.variable_stack.get_var_by_name(var_name)

@@ -5,12 +5,14 @@ from operation_parsing import parse_operation_argument
 from value_parsing import parse_value, types_len, parse_string_value, Types, parse_link
 from variable_holder import VariableId, VariableHolder
 
-logger=logging.getLogger("main.var_types")
+logger = logging.getLogger("var_types")
+
+
 def declare(directory):
     if directory.dirlen() != 3:
         error_factory.ErrorFactory.invalid_command_dir_number([3], directory.path, directory.dirlen(), "DECLARE")
     var_directory = directory.navigate_to_nth_child(1)
-    logger.debug(declare.__name__+f" VAR TYPES DECLARE {directory.path}")
+    logger.debug(declare.__name__ + f" VAR TYPES DECLARE {directory.path}")
     name_directory = directory.navigate_to_nth_child(2)
     (var_name, value) = parse_and_validate(var_directory, name_directory, types_dict[Types(directory.get_dir_type())])
 
@@ -22,7 +24,7 @@ def let(directory):
     if directory.dirlen() != 2:
         error_factory.ErrorFactory.invalid_command_dir_number([2], directory.path, directory.dirlen(), "LET")
     var_directory = directory.navigate_to_nth_child(1)
-    logger.debug(let.__name__+f" VAR TYPES LET {directory.path}")
+    logger.debug(let.__name__ + f" VAR TYPES LET {directory.path}")
     var_link = parse_link(directory.navigate_to_nth_child(0))
     import function_utils
     invoked_function = function_utils.get_currently_invoked_function()
@@ -38,7 +40,7 @@ def parse_and_validate(data_dir, name_directory, type):
     var_name = parse_string_value([name_directory])
     if var_name.startswith('/'):
         error_factory.ErrorFactory.restricted_variable_name_prefix(data_dir, var_name)
-    logger.debug(parse_and_validate.__name__+f" VAR TYPE {type} {var_name} = {value}")
+    logger.debug(parse_and_validate.__name__ + f" VAR TYPE {type} {var_name} = {value}")
     return var_name, value
 
 
