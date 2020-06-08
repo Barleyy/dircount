@@ -52,7 +52,7 @@ class VariableStack:
 
     def check_if_var_exists_by_name(self, var_name):
         for key in self.var_stack.keys():
-            if key.pointer == var_name:
+            if key.name == var_name:
                 return True
         else:
             return False
