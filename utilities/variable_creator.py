@@ -3,10 +3,11 @@ import sys
 import struct
 from enum import Enum
 
-path=sys.argv[1]
-var_type=sys.argv[2]
-var_name=sys.argv[3]
-var_val=sys.argv[4]
+path = sys.argv[1]
+var_type = sys.argv[2]
+var_name = sys.argv[3]
+var_val = sys.argv[4]
+
 
 class Types(Enum):
     function = 0
@@ -18,70 +19,73 @@ class Types(Enum):
     list = 6
     dict = 7
 
-def createTypeDir(var_type,path):
-    for i in range(0, Types[var_type].value):
-        Path(path+var_type+str(i)+"/").mkdir(parents=True, exist_ok=True)
+
+def create_type_dir(var_type_arg, path_arg):
+    for i in range(0, Types[var_type_arg].value):
+        Path(path_arg + var_type_arg + str(i) + "/").mkdir(parents=True, exist_ok=True)
 
 
-def createIntDirs(var_val,path):
-    if int(var_val)<0:
-        Path(path + "/bit0/negative/").mkdir(parents=True, exist_ok=True)
+def create_int_dirs(var_val_arg, path_arg):
+    if int(var_val_arg) < 0:
+        Path(path_arg + "/bit0/negative/").mkdir(parents=True, exist_ok=True)
     else:
-        Path(path + "/bit0/").mkdir(parents=True, exist_ok=True)
-    stringBinaryVal='{0:015b}'.format(int(var_val))
-    for i in range(0,len(stringBinaryVal)):
-        if stringBinaryVal[len(stringBinaryVal)-1-i]=="1":
-            Path(path + "/bit"+str(i+1)+"/1/").mkdir(parents=True, exist_ok=True)
+        Path(path_arg + "/bit0/").mkdir(parents=True, exist_ok=True)
+    string_binary_val = '{0:015b}'.format(int(var_val_arg))
+    create_int_based_dir(path_arg, string_binary_val)
+
+
+def create_int_based_dir(path_arg, string_binary_val):
+    for i in range(0, len(string_binary_val)):
+        if string_binary_val[len(string_binary_val) - 1 - i] == "1":
+            Path(path_arg + "/bit" + str(i + 1) + "/1/").mkdir(parents=True, exist_ok=True)
         else:
-            Path(path + "/bit" +str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
+            Path(path_arg + "/bit" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
 
 
-def createCharDirs(var_val,path):
-    binaryChar=format(ord(var_val), '08b')
-    for i in range(0,len(binaryChar)):
-        if binaryChar[len(binaryChar)-1-i]=="1":
-            Path(path + "/bit"+str(i+1)+"/1/").mkdir(parents=True, exist_ok=True)
+def create_char_dirs(var_val_arg, path_arg):
+    binary_char = format(ord(var_val_arg), '08b')
+    create_int_based_dir(path_arg, binary_char)
+
+
+def create_string_dir(var_val_arg, path_arg):
+    for i in range(0, len(var_val_arg)):
+        create_char_dirs(var_val_arg[i], path_arg + "/str1/char" + str(i) + "/")
+    Path(path_arg + "str2").mkdir(parents=True, exist_ok=True)
+
+
+def create_bool_dir(var_val_arg, path_arg):
+    if var_val_arg.lower() == "false":
+        Path(path_arg + "/0/").mkdir(parents=True, exist_ok=True)
+    elif var_val_arg.lower() == "true":
+        Path(path_arg + "/1/1/").mkdir(parents=True, exist_ok=True)
+
+
+def create_float_dir(var_val_arg, path_arg):
+    binary_float = float_to_bin(float(var_val_arg))[::-1]
+    for i in range(0, len(binary_float)):
+        if binary_float[i] == "1":
+            Path(path_arg + "/bit" + str(i + 1) + "/1/").mkdir(parents=True, exist_ok=True)
         else:
-            Path(path + "/bit" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
+            Path(path_arg + "/bit" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
 
-def createStringDir(var_val,path):
-    for i in range(0,len(var_val)):
-        createCharDirs(var_val[i],path+"/str1/char"+str(i)+"/")
-    Path(path+"str2").mkdir(parents=True, exist_ok=True)
-
-
-def createBoolDir(var_val, path):
-    if(var_val.lower()=="false"):
-        Path(path + "/0/").mkdir(parents=True, exist_ok=True)
-    elif(var_val.lower()=="true"):
-        Path(path+ "/1/1/").mkdir(parents=True, exist_ok=True)
 
 def float_to_bin(num):
     return format(struct.unpack('!I', struct.pack('!f', num))[0], '032b')
 
-def createFloatDir(var_val, path):
-    binaryFloat=float_to_bin(float(var_val))[::-1]
-    for i in range(0,len(binaryFloat)):
-        if binaryFloat[i]=="1":
-            Path(path + "/bit"+str(i+1)+"/1/").mkdir(parents=True, exist_ok=True)
-        else:
-            Path(path + "/bit" + str(i + 1) + "/").mkdir(parents=True, exist_ok=True)
+
+def create_var_dirs(path_arg, var_type_arg, var_name_arg, var_val_arg):
+    create_type_dir(var_type_arg, path_arg + "/dir0/")
+    if var_type_arg.lower() == "int":
+        create_int_dirs(var_val_arg, path_arg + "/dir1/")
+    elif var_type_arg.lower() == "float":
+        create_float_dir(var_val_arg, path_arg + "/dir1/")
+    elif var_type_arg.lower() == "char":
+        create_char_dirs(var_val_arg, path_arg + "/dir1/")
+    elif var_type_arg.lower() == "string":
+        create_string_dir(var_val_arg, path_arg + "/dir1/")
+    elif var_type_arg.lower() == "boolean":
+        create_bool_dir(var_val_arg, path_arg + "/dir1/")
+    create_string_dir(var_name_arg, path_arg + "/dir2/")
 
 
-def createVarDirs(path,var_type,var_name,var_val):
-    createTypeDir(var_type,path+"/dir0/")
-    if var_type.lower()=="int":
-        createIntDirs(var_val,path+"/dir1/")
-    elif var_type.lower()=="float":
-        createFloatDir(var_val,path+"/dir1/")
-    elif var_type.lower()=="char":
-        createCharDirs(var_val,path+"/dir1/")
-    elif var_type.lower()=="string":
-        createStringDir(var_val,path+"/dir1/")
-    elif var_type.lower()=="boolean":
-        createBoolDir(var_val,path+"/dir1/")
-    createStringDir(var_name,path+"/dir2/")
-
-
-createVarDirs(path,var_type,var_name,var_val)
-
+create_var_dirs(path, var_type, var_name, var_val)
