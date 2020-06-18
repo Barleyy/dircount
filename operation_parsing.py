@@ -7,7 +7,6 @@ from operations import operation_type, OperationType, operations_dict
 def parse_operation_argument(operation_arg_dir: Directory):
     # assuming none var type has size 3 (int 16, float 32, bool 1, char 8, string 2)
     is_link_val = operation_arg_dir.is_var_linked()
-
     if is_link_val:  # is link
         import function_utils
         invoked_function: Function = function_utils.get_currently_invoked_function()
@@ -16,7 +15,6 @@ def parse_operation_argument(operation_arg_dir: Directory):
     elif operation_arg_dir.dirlen() != 3:  # not link and not operation -> simple type
         _type = value_parsing.len_types[operation_arg_dir.dirlen()]
         arg_val = value_parsing.parse_generic_value(operation_arg_dir, _type, value_parsing.types_len[_type])
-
     else:  # arg is operation
         arg_val = operation_parsing(operation_arg_dir)
 

@@ -8,7 +8,7 @@ from variable_holder import VariableId, VariableHolder
 logger = logging.getLogger("var_types")
 
 
-def declare(directory):
+def declare(directory, link = None):
     if directory.dirlen() != 3:
         error_factory.ErrorFactory.invalid_command_dir_number([3], directory.path, directory.dirlen(), "DECLARE")
     var_directory = directory.navigate_to_nth_child(1)
@@ -16,7 +16,7 @@ def declare(directory):
     name_directory = directory.navigate_to_nth_child(2)
     (var_name, value) = parse_and_validate(var_directory, name_directory, types_dict[Types(directory.get_dir_type())])
 
-    attach_variable(name_directory.path, var_name, value, Types(directory.get_dir_type()))
+    attach_variable(link.path if link else name_directory.path , var_name, value, Types(directory.get_dir_type()))
     return name_directory.path, var_name, value
 
 

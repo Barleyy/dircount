@@ -38,7 +38,7 @@ class Directory:
         return self.children_paths
 
     def get_directory_children(self):
-        return [Directory(child, parent_path=self.path) for child in self.children_paths]
+        return [Directory(child, parent_path=self) for child in self.children_paths]
 
     def dirlen(self):
         return len(self.children_paths)
@@ -55,6 +55,12 @@ class Directory:
         return any(os.path.islink(path) for path in
                    self.get_children_paths()) and \
                self.dirlen() in [1, 3]  # is link or string name of var
+
+    def get_root_path(self):
+        parent = self.parent_path
+        while(parent.parent_path != None):
+            parent = parent.parent_path
+        return parent.path
 
     @staticmethod
     def directory_to_bit(directory_path):

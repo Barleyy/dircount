@@ -1,6 +1,10 @@
 import copy
 import logging
 
+import atexit
+import time
+import shutil
+import os
 import commands
 import error_factory
 from directory_functions import Directory
@@ -134,3 +138,24 @@ for_arguments_dict = {
     3: _var_and_condition_for,
     4: _full_for,
 }
+
+def input(directory):
+    logger.debug(input.__name__ + f" ECECUTING INPUT")
+    # 2 command expression dir holds var name, can be used as link
+    # input dir is created at root path
+    input_dir = directory.get_root_path() + "/input"
+    delete_input_dir(input_dir)
+    os.mkdir(input_dir)
+    # delete input dir if program gets terminated
+    atexit.register(delete_input_dir, input_dir=input_dir)
+    wait_for_input(input_dir, directory)
+
+def wait_for_input(input_dir, link_path):
+    while(len(os.listdir(input_dir)) == 0):
+        time.sleep(0.2)
+    declare( Directory(input_dir).navigate_to_nth_child(0), link = link_path )
+    shutil.rmtree(input_dir)
+
+def delete_input_dir(input_dir):
+    if(os.path.isdir(input_dir)):
+        shutil.rmtree(input_dir)
