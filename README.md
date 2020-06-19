@@ -1,19 +1,47 @@
+# Interpreter autorskiego języka dirCount
+
 # Spis treści
 1. [Zespół i zakres prac](#zespol)
 2. [Wstęp Teoretyczny](#wstęp)
+    - [Abstract Syntax Tree](#ast)
+    - [Parser LL](#ll)
+    - [Gramatyka języka](#gramatyka)
 3. [Typy danych](#typy)
+    - [Function](#function)
+    - [Int](#int)
+    - [Float](#float)
+    - [Char](#char)
+    - [String](#string)
+    - [Boolean](#bool)
+    - [List](#list)
+    - [Dict](#dict)
 4. [Operacje](#operacje)
+    - [Operacje arytmetyczne](#arytm)
+    - [Operacje logiczne](#logic)
+    - [Operacje na Stringach](#opstring)
+    - [Operacje na Listach](#listop)
+    - [Operacje na Słownikach](#dictop)
 5. [Komendy](#komendy)
+    - [Declare](#declare)
+    - [Let](#let)
+    - [If](#if)
+    - [While](#while)
+    - [For](#for)
+    - [Print](#print)
+    - [Invoke function](#invoke)
+    - [Input](#input)
 6. [Instrukcja](#instrukcja)
 
 ## [Zespół i zakres prac](#zespol)
 
-1. Maciej Nędza - testy, przykładowe programy
-2. Wojciech Sałapatek - automatyzacja testów, testy integracyjne
+1. Maciej Nędza - testy manualne, przykładowe programy
+2. Wojciech Sałapatek - architektura wstępna, testy integracyjne
 3. Marcin Grzyb - dokumentacja, utilities tworzenia kodu
-4. Paweł Gałka - development, features
+4. Paweł Gałka - development funkcjonalności
 
 Wszystkie założenia projektu zostały spełnione. Interpreter został przetestowany automatycznie i manualnie.
+
+Interpreter spełnia założenia obrane na początku projektu. Dodatkowo stoworzone zostały utilsy do generowania kodu w tym języku.
 
 ## [Wstęp Teoretyczny](#wstęp)
 
@@ -31,8 +59,7 @@ dirCount w języku programowania Python.
 Interpreter jest wolny od elementu lexera, ponieważ sama struktura kodu
 jednoznacznie wyznacza tokeny które opisują dany kontekst, element.
 
-Abstract Syntax Tree
---------------------
+### [Abstract Syntax Tree](#ast)
 
 Aby zrozumieć istotę działania tego języka trzeba zrozumieć koncepcję
 AST.
@@ -62,8 +89,7 @@ języku dirCount aby odwołać się do zmiennej możemy albo podać jej nazwę,
 albo wprost podać miejsce zadeklarowania tej zmiennej odnosząc się do
 liścia AST, przez co struktura kodu jest dosyć złożona.
 
-Parser LL
----------
+### [Parser LL](#ll)
 
 Parser LL to parser czytający tekst od lewej do prawej i produkujący
 lewostronne wyprowadzenie metodą zstępującą. Popularne rodzaje parserów
@@ -95,8 +121,7 @@ deklaracji, zmiany wartości dokonywanana jest aktualizacja zmiennej
 przechowywanej w strukturze słownikowej klucz : wartość = (path, name) =
 (value, type).
 
-Gramatyka języka
-----------------
+### [Gramatyka języka](#gramatyka)
 
 Dla interpretera nie używaliśmy pregenerowanych parserów typu ANTLR,
 Yacc, Bison ze względu na problem formalizacji gramatyki na oczekiwane
@@ -122,7 +147,7 @@ ogólny pogląd na język dirCount.
     CommandDirDeclare1 CommandDirDeclare2 CommandDirDeclare3 \|
     CommandDirLet1 CommandDirLet2 \| CommandDirWhile1 CommandDirWhile2
     \| CommandDirIf1 CommandDirIf2 CommandDirIf3 \| CommandDirFor1
-    CommandDirFor2 CommandDirFor3 CommandDirFor4 \| CommandDirPrint1 \|
+    CommandDirFor2 CommandDirFor3 CommandDirFor4 \| CommandDirPrint1 \| CommandDirInput
 
 7.  CommandDirFunction1 &#8594; FunctionsArgsList
 
@@ -202,6 +227,8 @@ ogólny pogląd na język dirCount.
 
 36. CommandDirPrint1 &#8594; Element CommandDirPrint1 \| epsilon
 
+37. CommandDirInput &#8594; epsilon
+
 Foldery boolDir, intDirX, floatDirX, charDirX są postaci bitowej
 przyjmując wartość 1 gdy w środku istnieje folder.
 
@@ -209,12 +236,20 @@ Ramowa gramatyka języka dirCount nie jest lewostronnie rekursywna i nie
 potrzeba lewostronnej faktoryzacji dlatego translator opiera się o
 zmodyfikowane działanie parsera LL(\*)
 
+Całość programu oparta jest o globalną bezargumentową funkcję main.
+Jest dla niej tworzony stos zmiennych i sama dodawana jest jako pierwsza do stosu wywołań funkcji.
+
+Każdorazowe wywołanie funkcji powoduje utworzenie jej głębokiej kopii (kopia - dla celów rekurencji) i dodanie jej na wierzchołek
+stosu wywołań funkcji. Razem z wywołaniem funkcji tworzony jest jej stos zmiennych. Odwołanie do zmiennej w ciele funkcji powoduje próbę jej odtworzenia ze zasocjonowanego do niej stosu, w przypadku jej braku, zmienna wyszukiwana jest w stosie globalnym (funkcji main).
+
 ## [Typy danych](#typy)
 
 Folder typu instrukcji deklaracji zmiennej zawiera informacje o typie
 zmiennej.\
 W zależności od N(liczba w nawiasie przy nazwie komendy) równemu liczbie
 podkatalogów folderu typu dostępne są następujące typy:
+
+-   function(0)
 
 -   int(1)
 
@@ -230,67 +265,12 @@ podkatalogów folderu typu dostępne są następujące typy:
 
 -   dict(7)
 
--   function(0)
-
 Podkatalogi wartości zmiennej zawierają w sobie 1 lub 0 podfoledrów -
 reprezentują one binarne 1 ( w przypadku obecności katalogu ) i 0 - w
 przypadku jego braku
 
-Int
----
 
-Folder wartości zmiennej typu int musi zawierać 16 podfolderów. Pierwszy
-podfolder reprezentuje znak (0 dla liczby dodatniej, 1 dla ujemnej),
-pozostałe 15 folderów to zapis liczby w postaci binarnej.
-
-Float
------
-
-Zmienna typu float jest reprezentowana zgodnie ze standardem IEEE
-754.Folder wartości zmiennej musi zawierać 32 podfolderów. Pierwszy
-podfolder reprezentuje znak (0 dla liczby dodatniej, 1 dla ujemnej), 23
-kolejnych folderów zawier wartość mantysy, 8 kolejnych folderów zawiera
-wartość cechy.
-
-Char
-----
-
-Folder wartości zmiennej typu float musi zawierać 8 podfolderów.
-Zawierają one reprezentację zmiennej w kodzie ASCII.
-
-String
-------
-
-Folder wartości zmiennej typu String musi zawierać 2 podfoldery.
-Pierwszy z nich zawiera katalogi w których zakodowana jest
-wartość poszczególnych zmiennych typu char składających się na napis.
-Ich wartość jest zakodowana w 8 podfolderach analogicznie jak przy
-deklaracji zmiennej typu char. Drugi natomiast pozostaje pusty.
-
-Boolean
--------
-
-Folder wartości zmiennej typu boolean musi zawierać 1 podfolder. Jeśli
-zawiera on jeden podfolder, to zmienna przyjmuje wartość true, w
-przeciwnym wypadku przyjmuje wartość false.
-
-List
-----
-
-Folder wartości zmiennej typu list musi zawierać 4 podfoldery. Pierwszy
-z nich zawiera podfoldery przetrzymujące wartości kolejnych elementów
-listy.
-
-Dict
-----
-
-Folder wartości zmiennej typu dict musi zawierać 5 podfolderów. Pierwszy
-z nich zawiera kolejne podfoldery będące elementami słownika. Każdy z
-nich musi zawierać 2 podfoldery - pierwszy z nich przetrzymuje wartość
-klucza słownika, natomiast drugi zawiera wartość elementu.
-
-Function
---------
+### [Function](#function)
 
 Folder funkcji musi zawierać 6 podkatalogów. Pierwszy z nich zawiera
 listę wykonywanych przez funkcję, drugi z nich zawiera listę nazw
@@ -298,6 +278,52 @@ argumentów przekazywanych do funkcji, trzeci z nich zawiera nazwę
 zwracanej zmiennej, w przypadku gdy funkcja ma sygnaturę void folder ten
 jest pusty, w przeciwnym wypadku po wykonaniu komand z pierwszego
 folderu jest zwracana zmienna z lokalnego stosu zmiennych funkcji.
+
+### [Int](#int)
+
+Folder wartości zmiennej typu int musi zawierać 16 podfolderów. Pierwszy
+podfolder reprezentuje znak (0 dla liczby dodatniej, 1 dla ujemnej),
+pozostałe 15 folderów to zapis liczby w postaci binarnej.
+
+### [Float](#float)
+
+Zmienna typu float jest reprezentowana zgodnie ze standardem IEEE
+754.Folder wartości zmiennej musi zawierać 32 podfolderów. Pierwszy
+podfolder reprezentuje znak (0 dla liczby dodatniej, 1 dla ujemnej), 23
+kolejnych folderów zawier wartość mantysy, 8 kolejnych folderów zawiera
+wartość cechy.
+
+### [Char](#char)
+
+Folder wartości zmiennej typu float musi zawierać 8 podfolderów.
+Zawierają one reprezentację zmiennej w kodzie ASCII.
+
+### [String](#string)
+
+Folder wartości zmiennej typu String musi zawierać 2 podfoldery.
+Pierwszy z nich zawiera katalogi w których zakodowana jest
+wartość poszczególnych zmiennych typu char składających się na napis.
+Ich wartość jest zakodowana w 8 podfolderach analogicznie jak przy
+deklaracji zmiennej typu char. Drugi natomiast pozostaje pusty.
+
+### [Boolean](#boolean)
+
+Folder wartości zmiennej typu boolean musi zawierać 1 podfolder. Jeśli
+zawiera on jeden podfolder, to zmienna przyjmuje wartość true, w
+przeciwnym wypadku przyjmuje wartość false.
+
+### [List](#list)
+
+Folder wartości zmiennej typu list musi zawierać 4 podfoldery. Pierwszy
+z nich zawiera podfoldery przetrzymujące wartości kolejnych elementów
+listy.
+
+### [Dict](#dict)
+
+Folder wartości zmiennej typu dict musi zawierać 5 podfolderów. Pierwszy
+z nich zawiera kolejne podfoldery będące elementami słownika. Każdy z
+nich musi zawierać 2 podfoldery - pierwszy z nich przetrzymuje wartość
+klucza słownika, natomiast drugi zawiera wartość elementu.
 
 ## [Operacje](#operacje)
 
@@ -321,8 +347,7 @@ Folder operacji musi zawierać 2 podkatalogi:
 -   liczba katalogów w drugim podkatalogu określa konkretny operator z
     danego typu
 
-Operatory arytmetyczne
-----------------------
+### [Operacje arytmetyczne](#arytm)
 
 Dostępnymi operatorami arytmetycznymi(które zostały określone poprzez
 wartość(N)) są:
@@ -339,8 +364,7 @@ wartość(N)) są:
 
 -   operator dzielenia modulo(6)
 
-Operatory logiczne
-------------------
+### [Operacje logiczne](#logic)
 
 Dostępnymi operatorami logicznymi(które zostały określone poprzez
 wartość(N)) są:
@@ -354,8 +378,7 @@ wartość(N)) są:
 -   x==y(5): logiczny operator relacji zwracajacy true gdy x i y są
     równe
 
-Operatory dla zmiennych typu String
------------------------------------
+### [Operacje na zmiennych typu String](#opstring)
 
 Dla zmiennych typu String dostępnymi operatorami(określonymi poprzez
 wartość(N)) są:
@@ -364,8 +387,7 @@ wartość(N)) są:
 
 -   operatory porównania(==,!=)-(2 oraz 3)
 
-Operatory na Listach
---------------------
+### [Operacje na Listach](#listop)
 
 Operacjami które można zastosować na listach(określonymi poprzez
 wartość(N)) są:
@@ -378,8 +400,7 @@ wartość(N)) są:
 
 -   usunięcie elementu na danej pozycji(4)
 
-Operatory na słownikach
------------------------
+### [Operacje na Słownikach](#dictop)
 
 Operacjami które można zastosować na słownikach(określonymi poprzez
 wartość(N)) są:
@@ -391,7 +412,6 @@ wartość(N)) są:
 -   usunięcie elementu ze słownika
 
 ## [Komendy](#komendy)
-=======
 
 Folder komendy musi zawierać 2 podkatalogi:
 
@@ -411,9 +431,8 @@ Dostępne komendy:
 - for (5)
 - print (6)
 - input (7)
-
-Declare
--------
+   
+### [Declare](#declare)
 
 Komenda declare pozwala na deklarację zmiennej. Drugi katalog komendy
 declare musi zawierać 3 podkatalogi:
@@ -424,21 +443,7 @@ declare musi zawierać 3 podkatalogi:
 
 -   trzeci zawiera informacje o nazwie zmiennej
 
-If
---
-
-If jest wyrażeniem warunkowym. Jego drugi katalog musi zawierać 2 lub 3
-foldery:
-
--   pierwszy zawiera logiczny warunek
-
--   drugi zawiera kod wykonywany w przypadku spełnienia warunku
-
--   trzeci (opcjonalny) zawiera kod wykonywany w przypadku nie
-    spełnienia logicznego warunku
-
-Let
----
+### [Let](#let)
 
 Let pozwala na zaktualizowanie wartości zmiennej podanej w linku
 symbolicznym. Jego drugi katalog musi zawierać 2 foldery:
@@ -451,8 +456,19 @@ symbolicznym. Jego drugi katalog musi zawierać 2 foldery:
 
 -   drugi zawiera nową wartość zmiennej
 
-While
------
+### [If](#if)
+
+If jest wyrażeniem warunkowym. Jego drugi katalog musi zawierać 2 lub 3
+foldery:
+
+-   pierwszy zawiera logiczny warunek
+
+-   drugi zawiera kod wykonywany w przypadku spełnienia warunku
+
+-   trzeci (opcjonalny) zawiera kod wykonywany w przypadku nie
+    spełnienia logicznego warunku
+    
+### [While](#while)
 
 While wykonuje instrukcje tak długo jak spełniony jest logiczny warunek.
 Jego drugi katalog musi zawierać 2 foldery:
@@ -461,8 +477,7 @@ Jego drugi katalog musi zawierać 2 foldery:
 
 -   drugi zawiera kod wykonywany tak długo jak spełniony jest warunek
 
-For
----
+### [For](#for)
 
 W zależności od liczby folderów w drugim katalogu komendy zdefiniowane
 są różne warianty pętli.
@@ -493,28 +508,32 @@ są różne warianty pętli.
     -   czwarty podfolder zawiera kod wykonany w przypadku spełnienia
         warunku
 
-Print
------
+### [Print](#print)
 
 Służy wypisaniu tekstu na ekran. Drugi katalog komendy musi zawierać
 jeden podfolder przetrzmujący listę argumentów, które zostana wypisane
 na ekran.
 
-Invoke function
----------------
+### [Invoke function](#invoke)
 
 Wywołanie funkcji musi zawierać 2 podkatalogi. Pierwszy z nich zawiera
 listę argumentów z jaką wywołujemy funkcję, drugi z nich jest linkiem do
 deklaracji funkcji odwołującym się do stosu zewnętrznej funkcji lub
 globalnej w przypadku niepowodzenia wyszukiwania w stosie funkcji matki.
 
+### [Input](#input)
+
+Służy pobraniu wartości zmiennej od użytkownika. Przy wykonaniu tworzony
+jest katalog input w katalogu głównym programu, do którego użytkownik
+powininej przemieścić folder zawierający deklarację zmiennej -
+identyczny z drugim katalogiem komendy declare. Po stworzeniu zmiennej
+katalog input zostaje usunięty, a wartość zmiennej zostaje zapisana w
+słowniku. Można się do niej odwołać poprzez link do drugiego katalogu
+komendy input.
+
 ## [Instrukcja](#instrukcja)
 
-Przykładowe struktury programów
--------------------------------
-
-Instrukcja Uruchomiania
------------------------
+### Instrukcja Uruchomiania
 
 Aby uruchomić przykładowy program należy uruchomić skrypt *main.py*.
 Przykładowa komenda uruchamiająca interpreter wygląda: *python main.py
