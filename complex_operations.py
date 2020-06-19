@@ -28,7 +28,7 @@ def _if(directory):
 
     elif directory.dirlen() == 3:
         logger.debug(_if.__name__ + ": false execution")
-        root = Directory(directory.navigate_to_nth_child(1).path)
+        root = Directory(directory.navigate_to_nth_child(2).path)
         for directory in root.get_directory_children():
             logger.debug(_if.__name__ + ": COMPLEX FALSE " + directory.path)
             commands.expression(directory)
