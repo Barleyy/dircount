@@ -12,6 +12,11 @@ def parse_operation_argument(operation_arg_dir: Directory):
         invoked_function: Function = function_utils.get_currently_invoked_function()
         arg_val = invoked_function.get_var(value_parsing.parse_link(operation_arg_dir)).value
 
+    elif operation_arg_dir.dirlen() == 2 and operation_arg_dir.navigate_to_nth_child(0).dirlen() == 0 \
+            and operation_arg_dir.navigate_to_nth_child(1).dirlen() == 2: # function result
+        import function_utils
+        return function_utils.get_last_returned_value()
+
     elif operation_arg_dir.dirlen() != 3:  # not link and not operation -> simple type
         _type = value_parsing.len_types[operation_arg_dir.dirlen()]
         arg_val = value_parsing.parse_generic_value(operation_arg_dir, _type, value_parsing.types_len[_type])

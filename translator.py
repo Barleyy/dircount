@@ -10,3 +10,4 @@ def translate(pointer):
     function_main.perform_function_code()
     logger.debug(function_main.variable_stack)
     Function.function_stack.pop()
+    logger.debug(f"PROGRAM ENDED WITH CODE 0")

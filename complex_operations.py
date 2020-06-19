@@ -127,10 +127,12 @@ def _function(directory):
             fun_instance.variable_stack = var_stack
         Function.function_stack.append(fun_instance)
         logger.debug(_function.__name__ + " FUNC BEFORE EXEC STACK" + str(fun_instance.variable_stack))
-        fun_instance.perform_function_code()
+        value_returning = fun_instance.perform_function_code()
         fun_instance.clear_var_stack()
         logger.debug(_function.__name__ + " FUNC AFTER EXEC STACK " + str(fun_instance.variable_stack))
         Function.function_stack.pop()
+        if value_returning:
+            function_utils.set_last_returned_value(value_returning)
 
 
 for_arguments_dict = {

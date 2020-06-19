@@ -11,3 +11,11 @@ def get_global_var_by_path(var_pointer):
 
 def get_global_var_by_name(var_name):
     return Function.function_stack[0].find_var_by_name(var_name)
+
+
+def get_last_returned_value():
+    return Function.variable_returning
+
+
+def set_last_returned_value(arg):
+    Function.variable_returning = arg

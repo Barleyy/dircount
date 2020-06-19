@@ -43,6 +43,10 @@ def parse_value(data_dir, type_class, basic_type_length):
     elif data_dir.dirlen() == 3:  # operation result
         return operation_parsing(data_dir)
 
+    elif data_dir.dirlen() == 2 and data_dir.navigate_to_nth_child(0).dirlen() == 0 and data_dir.navigate_to_nth_child(1).dirlen() == 2: # function result
+        import function_utils
+        return function_utils.get_last_returned_value()
+
     else:
         error_factory.ErrorFactory.unparsable_value(data_dir.parent_path.path, basic_type_length, data_dir.path,
                                                     type_class)
